@@ -1,5 +1,6 @@
+
 <template>
-  <div class="container mt-5">
+  <div class="container mt-3">
     <h2>Login</h2>
     <form @submit.prevent="login">
       <div class="mb-3">
