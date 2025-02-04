@@ -23,16 +23,25 @@
   </template>
   
   <script>
-  import { ref, onMounted } from 'vue';
+  import { ref, computed, onMounted } from 'vue';
+  import { useAuthStore } from '@/stores/authStore';
   import axios from '../plugins/axios';
   
   export default {
     setup() {
       const creditSales = ref([]);
-  
+
+      const authStore = useAuthStore();
+      const user =computed(()=> authStore.user);
+      console.log(user);
       const fetchCreditSales = async () => {
-        const response = await axios.get('/credit-sales/');
-        creditSales.value = response.data;
+        try{
+          const response = await axios.get('/credit-sales/');
+          creditSales.value = response.data;
+        } catch(error){
+          console.error('Error fetching credit sales', error);
+        }
+
       };
   
       onMounted(fetchCreditSales);
