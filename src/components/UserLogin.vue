@@ -1,20 +1,30 @@
-
 <template>
-  <div class="container mt-3">
-    <h2>Login</h2>
-    <form @submit.prevent="login">
-      <div class="mb-3">
-        <label for="username" class="form-label">Username</label>
-        <input type="text" class="form-control" v-model="credentials.username" required>
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <div class="container mt-3">
+              <h2>Login</h2>
+              <form class="mb-3" @submit.prevent="login">
+                <div class="form-floating mb-3">
+                  <input type="text" class="form-control" id="username" v-model="credentials.username"  placeholder="User Name" required>
+                  <label for="username">Username</label>
+                </div>
+                <div class="form-floating mb-3">
+                  <input type="password" class="form-control" id="password" v-model="credentials.password" placeholder="Password" required>
+                  <label for="password">Password</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <input type="password" class="form-control" v-model="credentials.password" required>
-      </div>
-      <button type="submit" class="btn btn-primary">Login</button>
-    </form>
+    </div>
   </div>
 </template>
+
 
 <script>
 import { ref } from 'vue';
