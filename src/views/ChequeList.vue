@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h1>All Active Cheque List</h1>
+        <h1>Cheque List</h1>
     </div>
 </template>
     

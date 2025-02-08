@@ -33,7 +33,6 @@
 
       const authStore = useAuthStore();
       const user =computed(()=> authStore.user);
-      console.log(user);
       const fetchCreditSales = async () => {
         try{
           const response = await axios.get('/credit-sales/');
