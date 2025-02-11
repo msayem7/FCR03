@@ -3,7 +3,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">{{ isEdit ? 'Edit' : 'Add' }} Organization</h5>
+            <h5 class="modal-title">{{ isEdit ? 'Edit' : 'Add' }} customer</h5>
             <button type="button" class="btn-close" @click="closeForm"></button>
           </div>
           <div class="modal-body">
@@ -17,21 +17,21 @@
               <div class="mb-3 form-check">
                 <input 
                   type="checkbox" 
-                  v-model="formData.is_mother_company"
+                  v-model="formData.is_parent"
                   class="form-check-input"
-                  @change="handleMotherCompanyChange"
+                  @change="handleParentChange"
                 >
-                <label class="form-check-label">Is Mother Company</label>
+                <label class="form-check-label">Is Parent</label>
               </div>
   
-              <div class="mb-3" v-if="!formData.is_mother_company">
-                <label class="form-label">Mother Company</label>
+              <div class="mb-3" v-if="!formData.is_parent">
+                <label class="form-label">Parent</label>
                 <select 
-                  v-model="formData.mother_company" 
+                  v-model="formData.parent" 
                   class="form-select"
                   required
                 >
-                  <option v-for="mc in motherCompanies" :key="mc.alias_id" :value="mc.alias_id">
+                  <option v-for="mc in parents" :key="mc.alias_id" :value="mc.alias_id">
                     {{ mc.name}}
                   </option>
                 </select>
@@ -55,8 +55,8 @@
 
 /* eslint-disable no-undef */
   const props = defineProps({
-    organization: Object,
-    motherCompanies: Array
+    customer: Object,
+    parents: Array
   })
   
   const emit = defineEmits(['close'])
@@ -65,35 +65,35 @@
   const formData = ref({
     id: null,
     name: '',
-    is_mother_company: false,
-    mother_company: null
+    is_parent: false,
+    parent: null
   })
 
   
-  //console.log('props.organization?.id',props.organization?.id)
+  //console.log('props.customer?.id',props.customer?.id)
   
-  const isEdit = computed(() => !!props.organization?.alias_id)
+  const isEdit = computed(() => !!props.customer?.alias_id)
 
   const resetForm = () => {
     formData.value = {
       id: null,
       name: '',
-      is_mother_company: false,
-      mother_company: null
+      is_parent: false,
+      parent: null
     }
   }
   
-  const handleMotherCompanyChange = () => {
-    if (formData.value.is_mother_company) {
-      formData.value.mother_company = null
+  const handleParentChange = () => {
+    if (formData.value.is_parent) {
+      formData.value.parent = null
     }
   }
   
   const submitForm = async () => {
     try {
       const url = formData.value.alias_id
-        ? `/organizations/${formData.value.alias_id}/`
-        : '/organizations/'
+        ? `/customers/${formData.value.alias_id}/`
+        : '/customers/'
         
       const method = formData.value.alias_id ? 'put' : 'post'
       
@@ -102,7 +102,7 @@
       emit('close', true)
 
     } catch (error) {
-      console.error('Error saving organization:', error)
+      console.error('Error saving customer:', error)
     }
   }
   
@@ -111,7 +111,7 @@
     emit('close', false)
   }
   
-  watch(() => props.organization, (newVal) => {
+  watch(() => props.customer, (newVal) => {
     if (newVal) {
       formData.value = { ...newVal }
     } else {
