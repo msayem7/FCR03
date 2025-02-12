@@ -53,7 +53,7 @@
   
   const loadBranches = async () => {
     try {
-      axios.get('/branches/'):
+      axios.get('/branches/');
      
       // const response = await axios.get('/branches/');
       // const data = response.data;
