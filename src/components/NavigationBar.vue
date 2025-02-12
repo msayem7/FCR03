@@ -120,6 +120,11 @@ import LogOut from './LogOut.vue';
         { name: 'Credit Sales', link: '/credit-sales', icon: 'bi-cash-coin' },
         { name: 'Charges List', link: '/charges-list', icon: 'bi bi-card-list'},
         { name: 'Deductions', link: '/deductions', icon: 'bi bi-receipt-cutoff' },
+        {
+          name: 'Branches',
+          link: '/branches',
+          icon: 'bi-building'
+        },
       ]
     }
     ,

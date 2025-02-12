@@ -27,6 +27,24 @@ const routes = [
     { path: '/reports/sales', name: 'sales', component: SalesReport, meta: {requiresAuth: true, hideNav: false} },
     { path: '/reports/sale/detail', name: 'sale-detail', component: SalesDetailReport, meta: {requiresAuth: true, hideNav: false} },
     { path: '/due-payements', name: 'due-payements', component: DuePayementsView, meta: {requiresAuth: true, hideNav: false} },
+    {
+      path: '/branches',
+      name: 'branches',
+      component: () => import('@/views/BranchListView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/branches/create',
+      name: 'branch-create',
+      component: () => import('@/views/BranchFormView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/branches/edit/:aliasId',
+      name: 'branch-edit',
+      component: () => import('@/views/BranchFormView.vue'),
+      meta: { requiresAuth: true }
+    }
 ];
 
 const router = createRouter({
