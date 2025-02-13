@@ -42,7 +42,7 @@ const routes = [
     {
       path: '/branches/edit/:aliasId',
       name: 'branch-edit',
-      component: () => import('@/views/BranchFormView.vue'),
+      component: () => import('@/views/BranchEditView.vue'),
       meta: { requiresAuth: true }
     }
 ];

@@ -9,6 +9,7 @@
             <th>Name</th>
             <th>Type</th>
             <th>Parent</th>
+            <th>Grace Days</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -17,6 +18,7 @@
             <td>{{ customer.name }}</td>
             <td>{{ customer.is_parent ? 'Parent' : 'Branch/Individual' }}</td>
             <td>{{ customer.parent_name || '-' }}</td>
+            <td>{{ customer.grace_days || '-' }}</td>
             <td>
               <!-- <button @click="openForm(customer)" class="btn btn-sm btn-warning">Edit</button> -->
               <button @click="openForm(customer)" class="btn btn-sm btn-warning">

@@ -31,7 +31,6 @@
             </option>
           </select>
         </div>
-
         <!-- Add address and contact fields -->
         <div class="col-12">
           <button type="submit" class="btn btn-primary">
@@ -44,6 +43,7 @@
 </template>
 
 <script setup>
+
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
@@ -80,16 +80,23 @@ const loadBranches = async () => {
 
 const handleSubmit = async () => {
   try {
-    if (isEditing.value) {
-      await axios.put(`/branches/${route.params.aliasId}/`, formData.value)
-    } else {
-      await axios.post('/branches/', formData.value)
+    const payload = {
+      ...formData.value,
+      version: formData.value.version // Make sure to send current version
     }
+    
+    if (isEditing.value) {
+      await axios.put(`/branches/${route.params.aliasId}/`, payload)
+    } else {
+      await axios.post('/branches/', payload)
+    }
+    console.log('Navigation to /branches')
     router.push('/branches')
+
   } catch (error) {
-    if (error.response?.data?.version) {
-      alert('This branch has been modified by another user. Please refresh.')
-      loadBranches()
+    if (error.response?.status === 409) {
+      alert('Concurrency conflict. Please refresh and try again.')
+      await loadBranches() // Refresh data
     }
   }
 }

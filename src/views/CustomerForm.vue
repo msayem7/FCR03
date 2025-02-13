@@ -8,7 +8,8 @@
           </div>
           <div class="modal-body">
             <form @submit.prevent="submitForm">
-              <input type="hidden" v-model="formData.alias_id">
+              <input type="hidden" v-model="formData.alias_id">              
+              
               <div class="mb-3">
                 <label class="form-label">Name</label>
                 <input v-model="formData.name" class="form-control" required>
@@ -23,7 +24,7 @@
                 >
                 <label class="form-check-label">Is Parent</label>
               </div>
-  
+              
               <div class="mb-3" v-if="!formData.is_parent">
                 <label class="form-label">Parent</label>
                 <select 
@@ -36,7 +37,10 @@
                   </option>
                 </select>
               </div>
-  
+              <div class="mb-3">
+                <label class="form-label">Grace in Days</label>
+                <input v-model="formData.grace_days" class="form-control" required>
+              </div>
               <!-- Add other fields as needed -->
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" @click="closeForm">Cancel</button>
@@ -63,10 +67,11 @@
   /* eslint-enable no-undef */
 
   const formData = ref({
-    id: null,
+    alias_id: null,
     name: '',
     is_parent: false,
-    parent: null
+    parent: null,
+    grace_days: 0.0
   })
 
   
@@ -76,10 +81,11 @@
 
   const resetForm = () => {
     formData.value = {
-      id: null,
+      alias_id: null,
       name: '',
       is_parent: false,
-      parent: null
+      parent: null,
+      grace_days: 0.0
     }
   }
   

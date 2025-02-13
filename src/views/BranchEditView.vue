@@ -1,7 +1,7 @@
 <template>
     <div v-if="branch">
       <h2>Edit Branch</h2>
-      <BranchForm 
+      <BranchFormView
         :initial-data="branch" 
         :is-editing="true" 
         @submit="handleUpdate"
@@ -13,7 +13,7 @@
   import { ref, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import axios from '@/plugins/axios'
-  import BranchForm from '@/components/BranchForm.vue'
+  import BranchFormView from '@/views/BranchFormView.vue'
   
   const route = useRoute()
   const branch = ref(null)

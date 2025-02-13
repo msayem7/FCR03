@@ -1,15 +1,15 @@
 <template>
     <div>
       <h2>Create New Branch</h2>
-      <BranchForm @submit="handleCreate"/>
+      <BranchFormView @submit="handleCreate"/>
     </div>
   </template>
   
   <script setup>
-  import { ref } from 'vue'
+  //import { ref } from 'vue'
   import { useRouter } from 'vue-router'
   import axios from '@/plugins/axios'
-  import BranchForm from '@/components/BranchForm.vue'
+  import BranchFormView from '@/views/BranchFormView.vue'
   
   const router = useRouter()
   
