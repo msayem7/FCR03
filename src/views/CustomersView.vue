@@ -54,20 +54,16 @@
         axios.get('/customers/'),
         axios.get('/customers/?is_parent=true')
       ])
-      customers.value = customersRes.data
+      customers.value = customersRes.data      
       parents.value = parentRes.data
 
-      // console.log('parentRes.data: ', parentRes.data)
-      // console.log('parents.value: ', parents.value)
 
     } catch (error) {
       console.error('Error fetching data:', error)
     }
   }
   
-  const openForm = (customer) => {
-    console.log(customer);
-    
+  const openForm = (customer) => {    
     selectedCus.value = customer || null
     showForm.value = true
   }

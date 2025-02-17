@@ -44,7 +44,26 @@ const routes = [
       name: 'branch-edit',
       component: () => import('@/views/BranchEditView.vue'),
       meta: { requiresAuth: true }
-    }
+    },
+    // Invoice routes
+    {
+      path: '/credit-invoices/create',
+      name: 'credit-invoice-create',
+      component: () => import('@/views/CreditInvoiceEntry.vue'),
+      meta: { requiresAuth: true, hideNav: false }
+    },
+    {
+      path: '/credit-invoices/edit/:aliasId',
+      name: 'credit-invoice-edit',
+      component: () => import('@/views/CreditInvoiceEntry.vue'),
+      meta: { requiresAuth: true, hideNav: false }
+    },
+    {
+      path: '/credit-invoices',
+      name: 'credit-invoices',
+      component: () => import('@/views/CreditInvoiceList.vue'),
+      meta: { requiresAuth: true, hideNav: false }
+    },
 ];
 
 const router = createRouter({

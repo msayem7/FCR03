@@ -75,8 +75,6 @@
   })
 
   
-  //console.log('props.customer?.id',props.customer?.id)
-  
   const isEdit = computed(() => !!props.customer?.alias_id)
 
   const resetForm = () => {

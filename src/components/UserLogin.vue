@@ -30,15 +30,19 @@
 import { ref } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
+import { useBranchStore } from '@/stores/branchStore'
+
 
 export default {
   setup() {
     const credentials = ref({ username: '', password: '' });
     const authStore = useAuthStore();
+    const branchStore = useBranchStore();
     const router = useRouter();
 
     const login = async () => {
-      await authStore.login(credentials.value);
+      await authStore.login(credentials.value);      
+      await branchStore.loadBranches();
       router.push('/credit-sales');
     };
 

@@ -90,7 +90,6 @@ const handleSubmit = async () => {
     } else {
       await axios.post('/branches/', payload)
     }
-    console.log('Navigation to /branches')
     router.push('/branches')
 
   } catch (error) {
