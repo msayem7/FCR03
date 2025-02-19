@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../components/UserLogin.vue';
-import CreditSales from '../components/CreditSales.vue';
 import ChequeList from '../components/ChequeList.vue';
 import { useAuthStore } from '@/stores/authStore';
 import DashboardView from '../views/DashboardView';
@@ -18,7 +17,6 @@ const routes = [
     { path: '/', name: 'login', component: Login, meta: { hideNav: true }},
     { path: '/cheque-dashboard', name: 'cheque-dashboard', component: DashboardView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/customers', name: 'customers', component: CustomersView, meta: {requiresAuth: true, hideNav: false} },
-    { path: '/credit-sales', name: 'credit-sales', component: CreditSales, meta: {requiresAuth: true, hideNav: false} },
     { path: '/charges-list', name: 'chargesList', component: ChargesListView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/deductions', name: 'deductions', component: DiductionsView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/cheques', name: 'cheques', component: ChequeList, meta: {requiresAuth: true, hideNav: false} },
