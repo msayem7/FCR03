@@ -20,7 +20,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="branch in branches" :key="branch.alias_id">
+              <tr v-for="branch in branches"  :key="branch.alias_id">
                 <td>{{ branch.name }}</td>
                 <td>{{ branchTypeMap[branch.branch_type] }}</td>
                 <td>{{ getParentName(branch.parent) }}</td>

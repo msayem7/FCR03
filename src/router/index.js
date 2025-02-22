@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../components/UserLogin.vue';
-import ChequeList from '../components/ChequeList.vue';
+import ChequeListView from '../views/ChequeListView.vue';
 import { useAuthStore } from '@/stores/authStore';
 import DashboardView from '../views/DashboardView';
 import CustomersView from '../views/CustomersView';
@@ -19,7 +19,7 @@ const routes = [
     { path: '/customers', name: 'customers', component: CustomersView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/charges-list', name: 'chargesList', component: ChargesListView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/deductions', name: 'deductions', component: DiductionsView, meta: {requiresAuth: true, hideNav: false} },
-    { path: '/cheques', name: 'cheques', component: ChequeList, meta: {requiresAuth: true, hideNav: false} },
+    { path: '/cheques', name: 'cheques', component: ChequeListView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/cheques/pending', name: 'pending', component: PendingListView, meta: {requiresAuth: true, hideNav: false} },  //Check not yet deposited
     { path: '/cheques/deposited', name: 'deposited', component: ChequeDepositedView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/reports/sales', name: 'sales', component: SalesReport, meta: {requiresAuth: true, hideNav: false} },
@@ -62,6 +62,24 @@ const routes = [
       component: () => import('@/views/CreditInvoiceList.vue'),
       meta: { requiresAuth: true, hideNav: false }
     },
+    {
+      path: '/cheques',
+      name: 'cheques',
+      component: () => import('@/views/ChequeListView.vue'),
+      meta: { requiresAuth: true, hideNav: false }
+    },
+    {
+      path: '/cheques/create',
+      name: 'cheque-create',
+      component: () => import('@/views/ChequeEntryView.vue'),
+      meta: { requiresAuth: true, hideNav: false }
+    },
+    {
+      path: '/cheques/edit/:aliasId',
+      name: 'cheque-edit',
+      component: () => import('@/views/ChequeEntryView.vue'),
+      meta: { requiresAuth: true, hideNav: false }
+    }
 ];
 
 const router = createRouter({
