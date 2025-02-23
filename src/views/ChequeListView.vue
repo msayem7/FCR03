@@ -34,6 +34,8 @@
           <tr>
             <th>Customer</th>
             <th>Amount</th>
+            <th>Adjusted</th>   
+            <th>Balance</th>            
             <th>Status</th> 
             <th>Received Date</th>
             <th>Actions</th>
@@ -43,6 +45,8 @@
           <tr v-for="cheque in cheques" :value="cheque.alias_id" :key="cheque.alias_id">
             <td>{{ cheque.customer_name }}</td> 
             <td>{{ cheque.cheque_amount }}</td>
+            <td>{{ cheque.sum_adjustment }}</td>  
+            <td>{{ cheque.cheque_amount - cheque.sum_adjustment }}</td>  
             <td>{{ getStatusText(cheque.cheque_status) }}</td>
             <td>{{ formatDate(cheque.received_date) }}</td>
             <td>
@@ -60,11 +64,13 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, watch, onMounted } from 'vue'
   import axios from '@/plugins/axios'
   import { formatDate } from '@/utils/dateFormatter'; 
+  import { useBranchStore } from '@/stores/branchStore'
   
   
+  const store = useBranchStore()
   const dateFormatter = { formatDate };
   const cheques = ref([])
   const customers = ref([])
@@ -82,14 +88,22 @@
     { value: 4, text: 'Dishonored' },
     { value: 5, text: 'Canceled' }
   ]
-  
+
   const fetchCheques = async () => {
     try {
-      const branch = localStorage.getItem('workingBranch')
-      if (!branch) throw new Error('Select a branch first')
+      
+      if (!store.selectedBranch) {
+        cheques.value = []
+      throw new Error('Select a branch first')
+    }
+    // const branch = localStorage.getItem('workingBranch')
+    // if (!branch) {
+    //   cheques.value = []
+    //   throw new Error('Select a branch first')
+    // }
       
       const params = {
-        branch,
+        branch: store.selectedBranch,
         date_from: filters.value.dateFrom,
         date_to: filters.value.dateTo,
         customer: filters.value.customer,
@@ -104,15 +118,27 @@
   }
   
   const fetchCustomers = async () => {
+    if (!store.selectedBranch) {
+        customers.value = []
+      }
     const { data } = await axios.get('/customers/')
     customers.value = data
   }
   
   const getStatusText = (status) => {
     return statusOptions.find(s => s.value === status)?.text || 'Unknown'
-  }
+  }  
+ 
   
   onMounted(() => {
+    fetchCustomers()
+    fetchCheques()
+  })
+
+  watch([
+    () => store.selectedBranch,
+    () => store.refreshTrigger
+  ], ()=>{
     fetchCustomers()
     fetchCheques()
   })
