@@ -19,7 +19,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useWBStore } from '@/stores/workingBranch'
+import { useWBStore } from '@/stores/branchStore' //WB = Working Branch 
 import { useAuthStore } from '@/stores/authStore'
 
 const authStore = useAuthStore()
@@ -29,11 +29,11 @@ const selectedBranch = ref('')
 
 onMounted(async () => {
   await branchStore.fill() // Ensure this method is called correctly
-  branches.value = store.branches
+  branches.value = branchStore.branches
   selectedBranch.value = localStorage.getItem('workingBranch') || ''
 })
 
 const updateWorkingBranch = () => {
-  store.updateWorkingBranch(selectedBranch.value)
+  branchStore.updateWorkingBranch(selectedBranch.value)
 }
 </script>

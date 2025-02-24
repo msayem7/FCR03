@@ -105,7 +105,7 @@ const fetchCustomers = async () => {
 const calculatePaymentDate = (invoice) => {
   if (!invoice.transaction_date) return ''
   const date = new Date(invoice.transaction_date)
-  console.log(invoice.invoice_no, date, date.getDate(), parseInt(invoice.payment_grace_days))
+  //console.log(invoice.invoice_no, date, date.getDate(), parseInt(invoice.payment_grace_days))
   
    if (invoice.graceDays) date.setDate(date.getDate() + parseInt(invoice.payment_grace_days))
    return date.toISOString().split('T')[0]

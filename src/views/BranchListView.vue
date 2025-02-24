@@ -59,7 +59,7 @@
       // const data = response.data;
       // the short form of above two lines is const { data } = await axios.get('/branches/') 
       const { data } = await axios.get('/branches/') 
-      console.log('branch list data:', data);
+      
       branches.value = data
       branches.value.forEach(branch => {
       });

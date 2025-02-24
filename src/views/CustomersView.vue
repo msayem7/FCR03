@@ -10,6 +10,7 @@
             <th>Type</th>
             <th>Parent</th>
             <th>Grace Days</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -19,6 +20,7 @@
             <td>{{ customer.is_parent ? 'Parent' : 'Branch/Individual' }}</td>
             <td>{{ customer.parent_name || '-' }}</td>
             <td>{{ customer.grace_days || '-' }}</td>
+            <td>{{ customer.is_active ? 'Active' : 'Inactive' }}</td>
             <td>
               <!-- <button @click="openForm(customer)" class="btn btn-sm btn-warning">Edit</button> -->
               <button @click="openForm(customer)" class="btn btn-sm btn-warning">
@@ -39,10 +41,15 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, watch } from 'vue'
   import axios from '../plugins/axios'
   import CustomerForm from './CustomerForm.vue'
+  //import { useBranchStore } from '@/stores/branchStore'
+  import { useBranchStore } from '@/stores/branchStore'
   
+  
+  const branchStore = useBranchStore()
+  //const branchStore = useBranchStore()
   const customers = ref([])
   const parents = ref([])
   const showForm = ref(false)
@@ -50,12 +57,26 @@
   
   const fetchData = async () => {
     try {
+      //console.log('branchStore.selectedBranch: ',branchStore.selectedBranch)
+      if (!branchStore.selectedBranch) {
+        customers.value = []
+        throw new Error('Select a branch first')
+      }
+      
+      const params = {
+        branch: branchStore.selectedBranch,
+        is_parent: true // Only for parent request
+      }
+
       const [customersRes, parentRes] = await Promise.all([
-        axios.get('/customers/'),
-        axios.get('/customers/?is_parent=true')
+        axios.get('/customers/', { 
+          params: { branch: branchStore.selectedBranch } 
+        }),
+        axios.get('/customers/', { params })
       ])
       customers.value = customersRes.data      
       parents.value = parentRes.data
+      //console.log('customers.value:', customers.value ,'customersRes.data: ', customersRes.data )
 
 
     } catch (error) {
@@ -64,14 +85,34 @@
   }
   
   const openForm = (customer) => {    
+
+    if (customer && customer.branch !== branchStore.selectedBranch) {
+      alert('You can only edit customers from the current branch')
+      return
+    }
+
     selectedCus.value = customer || null
     showForm.value = true
   }
   
   const handleFormClose = (saved) => {
+
     showForm.value = false
     if (saved) fetchData()
   }
   
   onMounted(fetchData)
+  watch(
+    () => branchStore.selectedBranch,
+    () => {
+      fetchData()
+    },
+    { immediate: true }
+  )
+  // watch(
+  //   branchStore.selectedBranch,
+  //   ()=>{
+  //     fetchData
+  //   }
+  // )
   </script>

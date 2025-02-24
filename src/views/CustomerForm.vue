@@ -41,7 +41,17 @@
                 <label class="form-label">Grace in Days</label>
                 <input v-model="formData.grace_days" class="form-control" required>
               </div>
-              <!-- Add other fields as needed -->
+              <div class="mb-3 form-check">
+                <input 
+                  type="checkbox" 
+                  v-model="formData.is_active"
+                  class="form-check-input"
+                  id="isActive"                    
+                >
+                <label class="form-check-label" for="isActive">Active</label>
+              </div>
+              
+              
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" @click="closeForm">Cancel</button>
                 <button type="submit" class="btn btn-primary" >Save</button>
@@ -54,9 +64,11 @@
   </template>
   
   <script setup>
+  import { useBranchStore } from '@/stores/branchStore'
   import { ref, computed, watch } from 'vue'
   import axios from '../plugins/axios'
 
+  const branchStore = useBranchStore()
 /* eslint-disable no-undef */
   const props = defineProps({
     customer: Object,
@@ -68,10 +80,12 @@
 
   const formData = ref({
     alias_id: null,
+    branch: branchStore.selectedBranch, // Auto-set from store,
     name: '',
     is_parent: false,
     parent: null,
-    grace_days: 0.0
+    grace_days: 0.0,
+    is_active:true
   })
 
   
@@ -83,7 +97,8 @@
       name: '',
       is_parent: false,
       parent: null,
-      grace_days: 0.0
+      grace_days: 0.0,
+      is_active:true  
     }
   }
   
@@ -98,9 +113,8 @@
       const url = formData.value.alias_id
         ? `/customers/${formData.value.alias_id}/`
         : '/customers/'
-        
       const method = formData.value.alias_id ? 'put' : 'post'
-      
+      formData.value.branch = branchStore.selectedBranch
       await axios[method](url, formData.value)
 
       emit('close', true)
@@ -117,9 +131,19 @@
   
   watch(() => props.customer, (newVal) => {
     if (newVal) {
-      formData.value = { ...newVal }
+      if (newVal.branch !== branchStore.selectedBranch) {
+        emit('close', false)
+        return
+      }
+
+      formData.value = { 
+        ...newVal,
+        branch: branchStore.selectedBranch, // Force current branch
+        // is_active: newVal.is_active
+      }
     } else {
       resetForm()
     }
-  }, { immediate: true })
+  }, { immediate: true }
+)
   </script>
