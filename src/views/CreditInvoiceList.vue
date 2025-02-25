@@ -49,7 +49,7 @@
           <td>{{ invoice.due_amount }}</td>
           <td>
             <router-link 
-              :to="{ name: 'credit-invoice-edit', params: { aliasId: invoice.alias_id }}" 
+              :to="{ name: 'CreditInvoiceEdit', params: { aliasId: invoice.alias_id }}" 
               class="btn btn-sm btn-warning"
             >
               Edit
@@ -98,8 +98,18 @@ const fetchInvoices = async () => {
 }
 
 const fetchCustomers = async () => {
-  const { data } = await axios.get('/customers/')
-  customers.value = data
+  try{
+    const params = {
+      is_active: true,
+      branch: store.selectedBranch
+    }
+    const { data } = await axios.get('/customers/', { params })
+    customers.value = data
+  } catch (error) {
+    console.error('Error loading customers: ', error)
+    alert('Error loading customers: '+ error.message)
+  }
+  
 }
 
 const calculatePaymentDate = (invoice) => {
@@ -115,9 +125,19 @@ onMounted(() => {
   fetchCustomers()
   fetchInvoices()
 })
-
 watch([
   () => store.selectedBranch,
   () => store.refreshTrigger
-], fetchInvoices)
+], () => {
+  fetchInvoices()
+  fetchCustomers()
+}, { immediate: true })
+
+// watch([
+//   () => store.selectedBranch,
+//   () => store.refreshTrigger
+// ], ()=>{
+//   fetchInvoices,
+//   fetchCustomers
+// }, { immediate: true })
 </script>

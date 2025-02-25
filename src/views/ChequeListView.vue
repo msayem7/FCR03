@@ -63,84 +63,94 @@
     </div>
   </template>
   
-  <script setup>
-  import { ref, watch, onMounted } from 'vue'
-  import axios from '@/plugins/axios'
-  import { formatDate } from '@/utils/dateFormatter'; 
-  import { useBranchStore } from '@/stores/branchStore'
+<script setup>
+import { ref, watch, onMounted } from 'vue'
+import axios from '@/plugins/axios'
+import { formatDate } from '@/utils/dateFormatter'; 
+import { useBranchStore } from '@/stores/branchStore'
   
   
-  const store = useBranchStore()
-  const dateFormatter = { formatDate };
-  const cheques = ref([])
-  const customers = ref([])
-  const filters = ref({
-    dateFrom: '',
-    dateTo: '',
-    customer: '',
-    status: []
-  })
+const store = useBranchStore()
+const dateFormatter = { formatDate };
+const cheques = ref([])
+const customers = ref([])
+const filters = ref({
+  dateFrom: '',
+  dateTo: '',
+  customer: '',
+  status: []
+})
   
-  const statusOptions = [
-    { value: 1, text: 'Received' },
-    { value: 2, text: 'Deposited' },
-    { value: 3, text: 'Honored' },
-    { value: 4, text: 'Dishonored' },
-    { value: 5, text: 'Canceled' }
-  ]
+const statusOptions = [
+  { value: 1, text: 'Received' },
+  { value: 2, text: 'Deposited' },
+  { value: 3, text: 'Honored' },
+  { value: 4, text: 'Dishonored' },
+  { value: 5, text: 'Canceled' }
+]
 
-  const fetchCheques = async () => {
-    try {
-      
-      if (!store.selectedBranch) {
-        cheques.value = []
-      throw new Error('Select a branch first')
-    }
-    // const branch = localStorage.getItem('workingBranch')
-    // if (!branch) {
-    //   cheques.value = []
-    //   throw new Error('Select a branch first')
-    // }
-      
-      const params = {
-        branch: store.selectedBranch,
-        date_from: filters.value.dateFrom,
-        date_to: filters.value.dateTo,
-        customer: filters.value.customer,
-        status: filters.value.status
-      }
-      
-      const { data } = await axios.get('/cheques/', { params })
-      cheques.value = data
-    } catch (error) {
-      alert(error.message)
-    }
+const fetchCheques = async () => {
+  try {
+    
+    if (!store.selectedBranch) {
+      cheques.value = []
+    throw new Error('Select a branch first')
   }
+  // const branch = localStorage.getItem('workingBranch')
+  // if (!branch) {
+  //   cheques.value = []
+  //   throw new Error('Select a branch first')
+  // }
+    
+    const params = {
+      branch: store.selectedBranch,
+      date_from: filters.value.dateFrom,
+      date_to: filters.value.dateTo,
+      customer: filters.value.customer,
+      status: filters.value.status
+    }
+    
+    const { data } = await axios.get('/cheques/', { params })
+    cheques.value = data
+  } catch (error) {
+    alert(error.message)
+  }
+}
   
-  const fetchCustomers = async () => {
+const fetchCustomers = async () => {
+  try{
+    const params = {
+    is_active: true,
+    branch: store.selectedBranch
+    }
+
     if (!store.selectedBranch) {
         customers.value = []
       }
-    const { data } = await axios.get('/customers/')
+    const { data } = await axios.get('/customers/',{ params})
     customers.value = data
+  } catch (error) {
+    console.error('error fetching customers', error)
   }
-  
-  const getStatusText = (status) => {
-    return statusOptions.find(s => s.value === status)?.text || 'Unknown'
-  }  
+}
+
+const getStatusText = (status) => {
+  return statusOptions.find(s => s.value === status)?.text || 'Unknown'
+}  
  
   
-  onMounted(() => {
-    fetchCustomers()
-    fetchCheques()
-  })
+onMounted(() => {
+  fetchCustomers()
+  fetchCheques()
+})
 
-  watch([
-    () => store.selectedBranch,
-    () => store.refreshTrigger
-  ], ()=>{
-    fetchCustomers()
-    fetchCheques()
-  })
-  </script>
+watch([
+  () => store.selectedBranch,
+ //() => store.refreshTrigger
+], ()=>{
+  fetchCustomers()
+  fetchCheques()
+})
+
+</script>
   

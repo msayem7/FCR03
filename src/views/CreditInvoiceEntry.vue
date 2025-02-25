@@ -157,10 +157,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
+import { useBranchStore } from '@/stores/branchStore'
 
+const store = useBranchStore()
 const route = useRoute()
 const router = useRouter()
 
@@ -213,8 +215,13 @@ const handleFile = (e) => {
 // Data fetching
 const fetchCustomers = async () => {
   try {
+    const params = {
+      is_active: true,
+      branch: store.selectedBranch
+    }
     loadingCustomers.value = true
-    const { data } = await axios.get('/customers/')
+
+    const { data } = await axios.get('/customers/', { params })
     customers.value = data
   } catch (error) {
     customerError.value = 'Failed to load customers. Please try again later.'
@@ -285,6 +292,20 @@ const handleSubmit = async () => {
     submitting.value = false
   }
 }
+
+// watch(() => store.selectedBranch, async () => {
+//   await fetchCustomers()
+// }, { immediate: true })
+
+watch(() => store.selectedBranch, (newBranch, oldBranch) => {
+  if (oldBranch && newBranch !== oldBranch) {
+    // Show alert to user
+    alert('Branch has changed. Redirecting to invoice list.')
+    // Redirect to invoice list
+    router.push('/credit-invoices')
+  }
+}, { immediate: true })
+
 
 // Initialization
 onMounted(async () => {

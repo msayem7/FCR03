@@ -46,19 +46,19 @@ const routes = [
     // Invoice routes
     {
       path: '/credit-invoices/create',
-      name: 'credit-invoice-create',
+      name: 'CreditInvoiceCreate',
       component: () => import('@/views/CreditInvoiceEntry.vue'),
       meta: { requiresAuth: true, hideNav: false }
     },
     {
       path: '/credit-invoices/edit/:aliasId',
-      name: 'credit-invoice-edit',
+      name: 'CreditInvoiceEdit',
       component: () => import('@/views/CreditInvoiceEntry.vue'),
       meta: { requiresAuth: true, hideNav: false }
     },
     {
       path: '/credit-invoices',
-      name: 'credit-invoices',
+      name: 'CreditInvoiceList',
       component: () => import('@/views/CreditInvoiceList.vue'),
       meta: { requiresAuth: true, hideNav: false }
     },

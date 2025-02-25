@@ -11,13 +11,22 @@
             class="form-select" 
             id="customerSelect"
             required
-          >
-            <option value="" disabled hidden>Select customer</option>
-            <option v-for="c in customers" :value="c.alias_id" :key="c.alias_id">
-              {{ c.name }}
+            :disabled="loadingCustomers"
+          >            
+            <option v-if="loadingCustomers" value="" disabled>
+              Loading customers...
             </option>
+            <template v-else>
+              <option value="" disabled hidden>Select customer</option>
+              <option v-for="c in customers" :value="c.alias_id" :key="c.alias_id">
+                {{ c.name }}
+              </option>
+            </template>            
           </select>
           <label for="customerSelect">Customer</label>
+          <div v-if="customerError" class="text-danger mt-1">
+            {{ customerError }}
+          </div>
         </div>
 
         <!-- Received Date -->
@@ -140,16 +149,22 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
 import { formatDate } from '@/utils/dateFormatter';
+import { useBranchStore } from '@/stores/branchStore';
+import BranchSelector from '@/components/branchSelector.vue';
 
+const branchStore = useBranchStore()
 const route = useRoute()
 const router = useRouter()
 
 const editing = computed(() => !!route.params.aliasId)
 // State
+const loadingCustomers = ref(true)
+const customerError = ref(null)
+
 const form = ref({
   customer: '',
   received_date: new Date().toISOString().split('T')[0],
@@ -180,6 +195,24 @@ const handleFile = (e) => {
   if (file) {
     form.value.cheque_image = file
     imagePreview.value = URL.createObjectURL(file)
+  }
+}
+
+const fetchCustomers =async ()=>{  
+  try {
+    const params = {
+        is_active: true,
+        branch: branchStore.selectedBranch
+      }
+
+    const { data } = await axios.get('/customers/', {params})
+    customers.value = data
+    loadingCustomers.value = true
+    
+  } catch (error) {
+    customerError.value = 'Failed to load customers. Please try again later.'
+  } finally {
+    loadingCustomers.value = false
   }
 }
 
@@ -255,9 +288,26 @@ const handleSubmit = async () => {
   }
 }
 
+watch(() => branchStore.selectedBranch, (newBranch, oldBranch) => {
+  if (oldBranch && newBranch !== oldBranch) {
+    // Show alert to user
+    alert('Branch has changed. Redirecting to cheque list.')
+    // Redirect to cheques list
+    router.push('/cheques')
+  }
+}, { immediate: true })
+
+watch(() => form.value.customer, (newCustomer, oldCustomer) => {
+  if (oldCustomer && newCustomer !== oldCustomer) {
+    customerInvoices.value = []
+    adjustments.value = {}
+    showInvoiceGrid.value = false
+  }
+}, { immediate: true })
+
+
 onMounted(async () => {
-  const { data } = await axios.get('/customers/')
-  customers.value = data
+  fetchCustomers()
   editing.value = !!route.params.aliasId; 
   
   if (route.params.aliasId) {
