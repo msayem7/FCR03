@@ -79,6 +79,12 @@ const routes = [
       name: 'cheque-edit',
       component: () => import('@/views/ChequeEntryView.vue'),
       meta: { requiresAuth: true, hideNav: false }
+    },
+    {
+      path: '/claims/',
+      name: 'Master-Claim',
+      component: () => import('@/views/ClaimPage.vue'),
+      meta: { requiresAuth: true, hideNav: false }
     }
 ];
 
