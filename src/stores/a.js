@@ -1,28 +1,30 @@
+<template>
+  <div class="working-branch-selector mb-3">
+    <select 
+      v-model="branchStore.selectedBranch" 
+      class="form-select form-select-sm"
+    >
+      <option value="">Select Working Branch</option>
+      <option 
+        v-for="branch in branchStore.branches" 
+        :key="branch.alias_id"
+        :value="branch.alias_id"
+      >
+        {{ branch.name }} <!--({{ branch.alias_id }}) -->
+      </option>
+    </select>
+  </div>
+</template>
 
-import { defineStore } from 'pinia';
-import axios from '../plugins/axios';
-import { useAuthStore } from './authStore';
+<script setup>
+import { onMounted } from 'vue'; // Import onMounted
+import { useBranchStore } from '@/stores/branchStore'
 
-export const useBranchStore = defineStore('credit', {   
-    state: () => ({
-        selectedBranch: localStorage.getItem('workingBranch') || null,        
-        branches: [],        
-        refreshTrigger: 0,
-    }),
-    getters: {
-        isBranchSelected: (state) => state.selectedBranch !== null,
-    },
-    actions: {
-        async loadBranches() {
-            const authStore = useAuthStore();
-            if (!authStore.user) return;
-            const { data } = await axios.get('/branches/');
-            this.branches = data;
-        },
-        setWorkingBranch(branch) {
-            this.selectedBranch = branch;
-            localStorage.setItem('workingBranch', branch);
-            this.refreshTrigger++; // Increment the refresh trigger
-        },
-    },
+const branchStore = useBranchStore();
+
+// Load branches when the component mounts
+onMounted(() => {
+  branchStore.loadBranches();
+  branchStore.selectedBranch = localStorage.getItem('workingBranch') || '';
 });
+</script>
