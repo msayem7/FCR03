@@ -28,36 +28,43 @@
         </div>
       </div>
     </div>
-
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Invoice No</th>
-          <th>Customer</th>
-          <th>Invoice Date</th>
-          <th>Payment Date</th>
-          <th>Amount</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="invoice in invoices" :key="invoice.alias_id">
-          <td>{{ invoice.invoice_no }}</td>
-          <td>{{ invoice.customer_name }}</td>
-          <td>{{ new Date(invoice.transaction_date).toLocaleDateString() }}</td>
-          <td>{{ calculatePaymentDate(invoice) }}</td>
-          <td>{{ invoice.due_amount }}</td>
-          <td>
-            <router-link 
-              :to="{ name: 'CreditInvoiceEdit', params: { aliasId: invoice.alias_id }}" 
-              class="btn btn-sm btn-warning"
-            >
-              Edit
-            </router-link>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    
+    <div class="table-responsive">      
+      <table class="table table-striped  table-hover">
+        <thead>
+          <tr>
+            <th>Invoice No</th>
+            <th>Customer</th>
+            <th>Invoice Date</th>
+            <th>Payment Date</th>
+            <th>Amount</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(invoice, index) in invoices" :key="invoice.alias_id">
+            <td>{{ invoice.invoice_no }} ({{ index + 1 }}/{{ invoices.length }})</td>
+            <td>{{ invoice.customer_name }}</td>
+            <td>{{ new Date(invoice.transaction_date).toLocaleDateString() }}</td>
+            <td>{{ calculatePaymentDate(invoice) }}</td>
+            <td>{{ invoice.due_amount }}</td>
+            <td>
+              <router-link 
+                :to="{ name: 'CreditInvoiceEdit', params: { aliasId: invoice.alias_id }}" 
+                class="btn btn-sm btn-warning"
+              >
+                Edit
+              </router-link>
+            </td>
+          </tr>
+          <!-- Add empty state message -->
+          <tr v-if="invoices.length === 0">
+            <td colspan="6" class="text-center">No invoices found</td>
+          </tr>
+        </tbody>
+      </table>
+    
+    </div>
   </div>
 </template>
 
@@ -93,6 +100,7 @@ const fetchInvoices = async () => {
     const { data } = await axios.get('/credit-invoices/', { params })
     invoices.value = data    
   } catch (error) {
+    console.error('Fetch error:', error) // Add this debug log
     alert('Credit Invoice: ' + error.message)
   }
 }
@@ -126,7 +134,14 @@ onMounted(() => {
   fetchInvoices()
 })
 watch([
-  () => store.selectedBranch,
+  () => store.selectedBranch
+], () => {
+  fetchInvoices()
+  fetchCustomers()
+}, { immediate: true })
+
+
+watch([
   () => store.refreshTrigger
 ], () => {
   fetchInvoices()
@@ -141,3 +156,24 @@ watch([
 //   fetchCustomers
 // }, { immediate: true })
 </script>
+
+<style scoped>
+.table-responsive {
+  overflow-x: auto;
+  max-height: none; /* Remove any height restrictions */
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+}
+
+tbody tr {
+  cursor: pointer;
+}
+
+tbody tr:hover {
+  background-color: rgba(0,0,0,.075);
+}
+</style>

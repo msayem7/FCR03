@@ -6,8 +6,9 @@ import { useAuthStore } from './authStore';
 export const useBranchStore = defineStore('credit', {   
     state: () => ({
         selectedBranch: localStorage.getItem('workingBranch') || null,        
-        branches: [],
-    }),
+        branches: [],        
+        refreshTrigger: 0,
+    }), 
     getters: {
         isBranchSelected: (state) => state.selectedBranch !== null,
     },
@@ -17,10 +18,15 @@ export const useBranchStore = defineStore('credit', {
             if (!authStore.user) return;
             const { data } = await axios.get('/branches/');
             this.branches = data;
+            if (this.selectedBranch && !this.branches.some(b => b.alias_id === this.selectedBranch)) {
+                this.selectedBranch = null;
+                localStorage.removeItem('workingBranch');
+            }
         },
         setWorkingBranch(branch) {
             this.selectedBranch = branch;
             localStorage.setItem('workingBranch', branch);
+            this.refreshTrigger++; // Increment the refresh trigger
         },
     },
 });

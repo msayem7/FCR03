@@ -83,7 +83,7 @@
   const fetchClaims = async () => {
     if (branchStore.selectedBranch) {
       try {
-        const response = await axios.get(`/claims/?branch=${branchStore.selectedBranch}`);
+        const response = await axios.get(`/master-claims/?branch=${branchStore.selectedBranch}`);
         claims.value = response.data;
       } catch (error) {
         errorMessage.value = 'Error fetching claims: ' + error.message;
@@ -112,9 +112,9 @@
   const saveClaim = async () => {
     try {
       if (isEditing.value) {
-        await axios.put(`/claims/${currentClaim.value.alias_id}/`, currentClaim.value);
+        await axios.put(`/master-claims/${currentClaim.value.alias_id}/`, currentClaim.value);
       } else {
-        await axios.post('/claims/', { ...currentClaim.value, branch: branchStore.selectedBranch });
+        await axios.post('/master-claims/', { ...currentClaim.value, branch: branchStore.selectedBranch });
       }
       fetchClaims();
       closeModal();
@@ -125,7 +125,7 @@
   
   const deleteClaim = async (alias_id) => {
     try {
-      await axios.delete(`/claims/${alias_id}/`);
+      await axios.delete(`/master-claims/${alias_id}/`);
       fetchClaims();
     } catch (error) {
       errorMessage.value = 'Error deleting claim: ' + error.message;

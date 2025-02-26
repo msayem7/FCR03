@@ -69,25 +69,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { useBranchStore } from '@/stores/branchStore'
-import axios from '@/plugins/axios'
+import { ref, onMounted, watch } from 'vue';
+import { useBranchStore } from '@/stores/branchStore';
+import axios from '@/plugins/axios';
 
-
-const store = useBranchStore()
-const invoices = ref([])
-const customers = ref([])
+const store = useBranchStore();
+const invoices = ref([]);
+const customers = ref([]);
 const filters = ref({
   dateFrom: '',
   dateTo: '',
   customer: ''
-})
+});
 
 const fetchInvoices = async () => {
   try {
     if (!store.selectedBranch) {
-      invoices.value = []
-      throw new Error('Select a branch first')
+      invoices.value = [];
+      throw new Error('Select a branch first');
     }
 
     const params = {
@@ -95,80 +94,42 @@ const fetchInvoices = async () => {
       transaction_date_after: filters.value.dateFrom,
       transaction_date_before: filters.value.dateTo,
       customer: filters.value.customer
-    }
+    };
 
-    const { data } = await axios.get('/credit-invoices/', { params })
-    console.log('Fetched invoices:', data) // Add this debug log
-    console.log('Number of invoices:', data.length) // Add this debug log
-    invoices.value = data    
+    const { data } = await axios.get('/credit-invoices/', { params });
+    invoices.value = data;
   } catch (error) {
-    console.error('Fetch error:', error) // Add this debug log
-    alert('Credit Invoice: ' + error.message)
+    console.error('Fetch error:', error);
+    alert('Credit Invoice: ' + error.message);
   }
-}
+};
 
 const fetchCustomers = async () => {
-  try{
+  try {
     const params = {
       is_active: true,
       branch: store.selectedBranch
-    }
-    const { data } = await axios.get('/customers/', { params })
-    customers.value = data
+    };
+    const { data } = await axios.get('/customers/', { params });
+    customers.value = data;
   } catch (error) {
-    console.error('Error loading customers: ', error)
-    alert('Error loading customers: '+ error.message)
+    console.error('Error loading customers: ', error);
+    alert('Error loading customers: ' + error.message);
   }
-  
-}
-
-const calculatePaymentDate = (invoice) => {
-  if (!invoice.transaction_date) return ''
-  const date = new Date(invoice.transaction_date)
-  //console.log(invoice.invoice_no, date, date.getDate(), parseInt(invoice.payment_grace_days))
-  
-   if (invoice.graceDays) date.setDate(date.getDate() + parseInt(invoice.payment_grace_days))
-   return date.toISOString().split('T')[0]
-}
+};
 
 onMounted(() => {
-  fetchCustomers()
-  fetchInvoices()
-})
-watch([
-  () => store.selectedBranch,
-  () => store.refreshTrigger
-], () => {
-  fetchInvoices()
-  fetchCustomers()
-}, { immediate: true })
+  fetchCustomers();
+  fetchInvoices();
+});
 
-// watch([
-//   () => store.selectedBranch,
-//   () => store.refreshTrigger
-// ], ()=>{
-//   fetchInvoices,
-//   fetchCustomers
-// }, { immediate: true })
+watch(() => store.selectedBranch, () => {
+  fetchInvoices();
+  fetchCustomers();
+}, { immediate: true });
+
+watch(() => store.refreshTrigger, () => {
+  fetchInvoices();
+  fetchCustomers();
+});
 </script>
-
-<style scoped>
-.table-responsive {
-  overflow-x: auto;
-  max-height: none; /* Remove any height restrictions */
-}
-
-.table {
-  width: 100%;
-  margin-bottom: 1rem;
-  border-collapse: collapse;
-}
-
-tbody tr {
-  cursor: pointer;
-}
-
-tbody tr:hover {
-  background-color: rgba(0,0,0,.075);
-}
-</style>

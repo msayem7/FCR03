@@ -154,7 +154,6 @@ import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
 import { formatDate } from '@/utils/dateFormatter';
 import { useBranchStore } from '@/stores/branchStore';
-import BranchSelector from '@/components/branchSelector.vue';
 
 const branchStore = useBranchStore()
 const route = useRoute()

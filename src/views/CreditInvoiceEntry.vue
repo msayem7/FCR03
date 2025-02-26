@@ -141,6 +141,14 @@
               alt="Current invoice"
             >
           </div>
+          
+        </div>
+        <div class="col-12">
+          <CustomerClaims
+            v-if="form.invoice_no"
+            :customerAliasId="form.customer"
+            :invoiceAliasId="invoiceId"
+          />
         </div>
 
         <!-- Action Buttons -->
@@ -161,6 +169,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
 import { useBranchStore } from '@/stores/branchStore'
+import CustomerClaims from '@/views/CustomerClaims.vue'
 
 const store = useBranchStore()
 const route = useRoute()
@@ -178,6 +187,7 @@ const existingImageUrl = ref(null)
 const editing = ref(false)
 const invoiceId = ref(null)
 const customers = ref([])
+//const customerClaimsRef = ref(null)
 
 // Form data
 const form = ref({

@@ -14,13 +14,27 @@
 //   name: 'App',
 
 // }
-  import { computed } from 'vue'
+  import { computed, onMounted } from 'vue'
+  import { useAuthStore } from '@/stores/authStore'
+  import { useBranchStore } from '@/stores/branchStore'
+
   import { useRoute } from 'vue-router'
   import NavigationBar from './components/NavigationBar.vue'
   import WorkingBranchSelector from '@/components/WorkingBranchSelector.vue'
 
   const route = useRoute()
   const showNav = computed(() => !route.meta.hideNav)
+  
+const authStore = useAuthStore()
+const branchStore = useBranchStore()
+
+onMounted(async () => {
+    await authStore.initialize() // Add this action to authStore (see next step)
+    if (authStore.user) {
+        await branchStore.loadBranches()
+    }
+})
+
 </script>
 
 <style>

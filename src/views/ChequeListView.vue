@@ -23,7 +23,7 @@
               </select>
             </div>
             <div class="col-md-3">
-              <button @click="fetchCheques" class="btn btn-primary w-100">Filter</button>
+              <button class="btn btn-primary w-100" @click="fetchCheques" >Filter</button>
             </div>
           </div>
         </div>
@@ -146,7 +146,7 @@ onMounted(() => {
 
 watch([
   () => store.selectedBranch,
- //() => store.refreshTrigger
+  () => store.refreshTrigger
 ], ()=>{
   fetchCustomers()
   fetchCheques()
