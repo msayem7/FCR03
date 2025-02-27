@@ -145,6 +145,7 @@
         </div>
         <div class="col-12">
           <CustomerClaims
+            ref="customerClaimsRef"
             v-if="form.invoice_no"
             :customerAliasId="form.customer"
             :invoiceAliasId="invoiceId"
@@ -187,7 +188,7 @@ const existingImageUrl = ref(null)
 const editing = ref(false)
 const invoiceId = ref(null)
 const customers = ref([])
-//const customerClaimsRef = ref(null)
+const customerClaimsRef = ref(null)
 
 // Form data
 const form = ref({
@@ -275,8 +276,20 @@ const handleSubmit = async () => {
     const branch = localStorage.getItem('workingBranch')
     if (!branch) throw new Error('Select a branch first')
     
+    // Get claims data from child component
+    const allClaims = customerClaimsRef.value?.claims || []
+    const claimsToSave = allClaims.filter(c => {
+      // Filter out zero amounts and invalid claims
+      return Number(c.claim_amount) !== 0 && c.claim_amount !== ''
+    }).map(c => ({
+      alias_id: c.alias_id,
+      claim_amount: c.claim_amount,
+      existing: c.existing
+    }))
+
     const formData = new FormData()
     formData.append('version', form.value.version)
+    formData.append('claims', JSON.stringify(claimsToSave))
     
     Object.entries(form.value).forEach(([key, val]) => {
       if (key === 'invoice_image') {
@@ -288,7 +301,7 @@ const handleSubmit = async () => {
     
     formData.append('branch', branch)
 
-    await axios({
+    const response = await axios({
       method: editing.value ? 'put' : 'post',
       url: editing.value ? `/credit-invoices/${invoiceId.value}/` : '/credit-invoices/',
       data: formData,

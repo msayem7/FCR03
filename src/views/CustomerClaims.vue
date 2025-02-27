@@ -1,6 +1,6 @@
 <template>
     <div class="customer-claims">
-      <h4>Customer Claims</h4>
+      
       <div v-if="loadingClaims" class="text-center">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -23,6 +23,7 @@
                 <input
                   type="number"
                   v-model="claim.claim_amount"
+                  @blur="validateNumber(claim)"
                   class="form-control"
                   :disabled="!claim.is_active && !claim.existing"
                 />
@@ -48,6 +49,17 @@
   const claims = ref([]);
   const loadingClaims = ref(false);
   
+  // Update input handler to validate numbers
+  const validateNumber = (claim) => {
+    const value = parseFloat(claim.claim_amount)
+    if (isNaN(value)) {
+      claim.claim_amount = 0
+    } else {
+      claim.claim_amount = Math.max(0, value).toFixed(4)
+    }
+  }
+
+
   // Fetch claims for the selected branch and customer
   const fetchClaims = async () => {
     try {
