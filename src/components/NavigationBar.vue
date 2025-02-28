@@ -142,7 +142,7 @@ import LogOut from './LogOut.vue';
       name: 'Reports',
       icon: 'bi-bar-chart',
       submenu: [
-        { name: 'Sales Reports', link: '/reports/sales', icon: 'bi-graph-up' },
+        { name: 'Invoice Reports', link: '/reports/invoice/cheque', icon: 'bi-graph-up' },
         { name: 'Sale Detail', link: '/reports/Sales/Detail', icon: 'bi-pie-chart' },
         { name: 'Customer Due Payements', link: '/due-payements', icon: 'bi-receipt' }
       ]

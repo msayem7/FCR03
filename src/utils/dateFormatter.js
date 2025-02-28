@@ -16,6 +16,3 @@ export function formatDate(dateString) {
       day: 'numeric' 
     })
   }
-
-  
-

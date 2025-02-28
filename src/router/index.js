@@ -7,7 +7,7 @@ import CustomersView from '../views/CustomersView';
 import DuePayementsView from '../views/DuePayementsView';
 import PendingListView from '../views/PendingListView';
 import ChequeDepositedView from '../views/ChequeDepositedView';
-import SalesReport from '../views/SalesReport';
+import InvoiceChequeRep from '@/Reports/InvoiceChequeRep.vue';
 import SalesDetailReport from '../views/SalesDetailReport';
 import ChargesListView from '@/views/ChargesListView.vue';
 import DiductionsView from '@/views/DiductionsView.vue';
@@ -22,7 +22,7 @@ const routes = [
     { path: '/cheques', name: 'cheques', component: ChequeListView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/cheques/pending', name: 'pending', component: PendingListView, meta: {requiresAuth: true, hideNav: false} },  //Check not yet deposited
     { path: '/cheques/deposited', name: 'deposited', component: ChequeDepositedView, meta: {requiresAuth: true, hideNav: false} },
-    { path: '/reports/sales', name: 'sales', component: SalesReport, meta: {requiresAuth: true, hideNav: false} },
+    { path: '/reports/invoice/cheque', name: 'invoice-report', component: InvoiceChequeRep, meta: {requiresAuth: true, hideNav: false} },
     { path: '/reports/sale/detail', name: 'sale-detail', component: SalesDetailReport, meta: {requiresAuth: true, hideNav: false} },
     { path: '/due-payements', name: 'due-payements', component: DuePayementsView, meta: {requiresAuth: true, hideNav: false} },
     {
