@@ -95,7 +95,7 @@
   <script setup>
   import { ref, reactive } from 'vue';
   // import { useRouter } from 'vue-router';
-import LogOut from './LogOut.vue';
+  import LogOut from './LogOut.vue';
   
   // const router = useRouter();
   
@@ -118,9 +118,8 @@ import LogOut from './LogOut.vue';
       submenu: [
         { name: 'Customers', link: '/customers', icon: 'bi-people' },
         { name: 'Credit Invoices', link: '/credit-invoices', icon: 'bi-cash-coin' },
-        { name: 'Credit Sales', link: '/credit-sales', icon: 'bi-cash-coin' },
         { name: 'Claims', link: '/claims', icon: 'bi bi-card-list'},
-        { name: 'Deductions', link: '/deductions', icon: 'bi bi-receipt-cutoff' },
+        // { name: 'Deductions', link: '/deductions', icon: 'bi bi-receipt-cutoff' },
         {
           name: 'Branches',
           link: '/branches',

@@ -43,7 +43,7 @@ export default {
     const login = async () => {
       await authStore.login(credentials.value);      
       await branchStore.loadBranches();
-      router.push('/credit-sales');
+      router.push('/cheque-dashboard');
     };
 
     return { credentials, login };

@@ -4,7 +4,7 @@ import axios from 'axios';
 // axios.defaults.headers.common['Authorization'] = localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : '';
 
 const instance = axios.create({
-  baseURL:'http://localhost:8000/api/',
+  baseURL:'http://localhost:8000/v1/chq',
 })
 
 instance.interceptors.request.use((config)=>{
