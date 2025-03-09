@@ -232,7 +232,7 @@ const fetchCustomers = async () => {
     }
     loadingCustomers.value = true
 
-    const { data } = await axios.get('/customers/', { params })
+    const { data } = await axios.get('/v1/chq/customers/', { params })
     customers.value = data
   } catch (error) {
     customerError.value = 'Failed to load customers. Please try again later.'
@@ -244,13 +244,14 @@ const fetchCustomers = async () => {
 const fetchInvoice = async () => {
   try {
     loading.value = true
-    const { data } = await axios.get(`/credit-invoices/${invoiceId.value}/`)
+    const { data } = await axios.get(`/v1/chq/credit-invoices/${invoiceId.value}/`)
     
     form.value = {
       ...data,
       customer: data.customer, // Direct assignment of alias_id
       version: data.version
     }
+    console.log('Form value: ',form.value)
 
     if (data.invoice_image) {
       existingImageUrl.value = data.invoice_image
@@ -303,7 +304,7 @@ const handleSubmit = async () => {
 
     const response = await axios({
       method: editing.value ? 'put' : 'post',
-      url: editing.value ? `/credit-invoices/${invoiceId.value}/` : '/credit-invoices/',
+      url: editing.value ? `/v1/chq/credit-invoices/${invoiceId.value}/` : '/v1/chq/credit-invoices/',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' }
     })

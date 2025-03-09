@@ -71,7 +71,7 @@ const availableParents = computed(() => {
 
 const loadBranches = async () => {
   try {
-    const { data } = await axios.get('/branches/')
+    const { data } = await axios.get('/v1/chq/branches/')
     branches.value = data
   } catch (error) {
     console.error('Error loading branches:', error)
@@ -86,9 +86,9 @@ const handleSubmit = async () => {
     }
     
     if (isEditing.value) {
-      await axios.put(`/branches/${route.params.aliasId}/`, payload)
+      await axios.put(`/v1/chq/branches/${route.params.aliasId}/`, payload)
     } else {
-      await axios.post('/branches/', payload)
+      await axios.post('/v1/chq/branches/', payload)
     }
     router.push('/branches')
 
@@ -103,7 +103,7 @@ const handleSubmit = async () => {
 onMounted(async () => {
   await loadBranches()
   if (isEditing.value) {
-    const { data } = await axios.get(`/branches/${route.params.aliasId}/`)
+    const { data } = await axios.get(`/v1/chq/branches/${route.params.aliasId}/`)
     formData.value = data
   }
 })

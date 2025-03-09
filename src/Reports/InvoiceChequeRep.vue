@@ -115,42 +115,13 @@ const loadReport = async () => {
       min_amount: filters.value.min_amount,
       max_amount: filters.value.max_amount
     }
-    const { data } = await axios.get('/reports/ci-vs-cheque', { params })
+    const { data } = await axios.get('/v1/chq/reports/ci-vs-cheque', { params })
     console.log('Report Data:', data)
     reportData.value = data
   } catch (error) {
     console.error('Error loading report:', error)
   }
 };
-
-// const exportExcel = async () => {
-//   const params = new URLSearchParams({
-//     ...filters.value,
-//     branch: branchStore.selectedBranch
-//   }).toString();
-//   window.location = `/api/reports/ci-vs-cheque/export_excel/?${params}`; // Added leading slash
-// };
-// const exportExcel = async () => {
-//   try {
-//     // Get base URL from axios configuration
-//     const baseURL = axios.defaults.baseURL || 'http://localhost:8000'
-    
-//     const params = new URLSearchParams({
-//       ...filters.value,
-//       branch: branchStore.selectedBranch
-//     }).toString()
-    
-//     // Construct full URL
-//     const url = `${baseURL}reports/ci-vs-cheque/export_excel/?${params}`
-//     console.log('Export URL:', url) // Debug log
-    
-//     // Use window.open for better browser compatibility
-//     window.open(url, '_blank')
-//   } catch (error) {
-//     console.error('Export error:', error)
-//     alert('Failed to export Excel file')
-//   }
-// }
 
 const exportExcel = async () => {
   try {
@@ -168,7 +139,7 @@ const exportExcel = async () => {
 
     // Use axios directly with proper headers
     const response = await axios({
-      url: `/reports/ci-vs-cheque/export_excel/?${params}`,
+      url: `/v1/chq/reports/ci-vs-cheque/export_excel/?${params}`,
       method: 'GET',
       responseType: 'blob',
       headers: {
@@ -208,7 +179,7 @@ const exportPDF = async () => {
 
     // Use axios directly with proper headers
     const response = await axios({
-      url: `/reports/ci-vs-cheque/export_pdf/?${params}`,
+      url: `/v1/chq/reports/ci-vs-cheque/export_pdf/?${params}`,
       method: 'GET',
       responseType: 'blob',
       headers: {

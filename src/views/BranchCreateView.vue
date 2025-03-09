@@ -15,7 +15,7 @@
   
   const handleCreate = async (formData) => {
     try {
-      const { data } = await axios.post('/branches/', formData)
+      const { data } = await axios.post('/v1/chq/branches/', formData)
       router.push({ name: 'branch-edit', params: { aliasId: data.alias_id } })
     } catch (error) {
       // Handle error

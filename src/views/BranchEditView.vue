@@ -19,13 +19,13 @@
   const branch = ref(null)
   
   const loadBranch = async () => {
-    const { data } = await axios.get(`/branches/${route.params.aliasId}/`)
+    const { data } = await axios.get(`/v1/chq/branches/${route.params.aliasId}/`)
     branch.value = data
   }
   
   const handleUpdate = async (formData) => {
     try {
-      await axios.put(`/branches/${branch.value.alias_id}/`, formData)
+      await axios.put(`/v1/chq/branches/${branch.value.alias_id}/`, formData)
       // Handle success (redirect or show message)
     } catch (error) {
       if (error.response?.data?.version) {

@@ -117,8 +117,9 @@
       icon: 'bi-currency-dollar',
       submenu: [
         { name: 'Customers', link: '/customers', icon: 'bi-people' },
-        { name: 'Credit Invoices', link: '/credit-invoices', icon: 'bi-cash-coin' },
+        { name: 'Claim Categories', link: '/claim/categories/', icon: 'bi bi-card-list'},
         { name: 'Claims', link: '/claims', icon: 'bi bi-card-list'},
+        { name: 'Credit Invoices', link: '/credit-invoices', icon: 'bi-cash-coin' }, ///claim/categories/
         // { name: 'Deductions', link: '/deductions', icon: 'bi bi-receipt-cutoff' },
         {
           name: 'Branches',

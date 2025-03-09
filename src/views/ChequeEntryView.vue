@@ -204,7 +204,7 @@ const fetchCustomers =async ()=>{
         branch: branchStore.selectedBranch
       }
 
-    const { data } = await axios.get('/customers/', {params})
+    const { data } = await axios.get('/v1/chq/customers/', {params})
     customers.value = data
     loadingCustomers.value = true
     
@@ -218,7 +218,7 @@ const fetchCustomers =async ()=>{
 const showInvoices = async () => {
   if (!form.value.customer) return alert('Select customer first')
   try {
-    const { data } = await axios.get(`/credit-invoices/?customer=${form.value.customer}&status=true`)
+    const { data } = await axios.get(`/v1/chq/credit-invoices/?customer=${form.value.customer}&status=true`)
     customerInvoices.value = data
     showInvoiceGrid.value = true
   } catch (error) {
@@ -272,11 +272,11 @@ const handleSubmit = async () => {
     formData.append('invoice_cheques', JSON.stringify(invoiceCheques))
 
     if (route.params.aliasId) {
-      await axios.put(`/cheques/${route.params.aliasId}/`, formData, {
+      await axios.put(`/v1/chq/cheques/${route.params.aliasId}/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
     } else {
-      await axios.post('/cheques/', formData, {
+      await axios.post('/v1/chq/cheques/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
     }
@@ -310,7 +310,7 @@ onMounted(async () => {
   editing.value = !!route.params.aliasId; 
   
   if (route.params.aliasId) {
-    const { data: cheque } = await axios.get(`/cheques/${route.params.aliasId}/`,{
+    const { data: cheque } = await axios.get(`/v1/chq/cheques/${route.params.aliasId}/`,{
       params: { include_invoice_cheques: true }
     })
 

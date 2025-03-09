@@ -69,10 +69,10 @@
       }
 
       const [customersRes, parentRes] = await Promise.all([
-        axios.get('/customers/', { 
+        axios.get('/v1/chq/customers/', { 
           params: { branch: branchStore.selectedBranch } 
         }),
-        axios.get('/customers/', { params })
+        axios.get('/v1/chq/customers/', { params })
       ])
       customers.value = customersRes.data      
       parents.value = parentRes.data

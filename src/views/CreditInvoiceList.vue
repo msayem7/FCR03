@@ -94,10 +94,11 @@ const fetchInvoices = async () => {
       branch: store.selectedBranch,
       transaction_date_after: filters.value.dateFrom,
       transaction_date_before: filters.value.dateTo,
-      customer: filters.value.customer
+      customer: filters.value.customer, 
+      _t: new Date().getTime()
     }
 
-    const { data } = await axios.get('/credit-invoices/', { params })
+    const { data } = await axios.get('/v1/chq/credit-invoices/', { params })
     invoices.value = data    
   } catch (error) {
     console.error('Fetch error:', error) // Add this debug log
@@ -111,7 +112,7 @@ const fetchCustomers = async () => {
       is_active: true,
       branch: store.selectedBranch
     }
-    const { data } = await axios.get('/customers/', { params })
+    const { data } = await axios.get('/v1/chq/customers/', { params })
     customers.value = data
   } catch (error) {
     console.error('Error loading customers: ', error)

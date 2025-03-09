@@ -110,7 +110,7 @@ const fetchCheques = async () => {
       status: filters.value.status
     }
     
-    const { data } = await axios.get('/cheques/', { params })
+    const { data } = await axios.get('/v1/chq/cheques/', { params })
     cheques.value = data
   } catch (error) {
     alert(error.message)
@@ -127,7 +127,7 @@ const fetchCustomers = async () => {
     if (!store.selectedBranch) {
         customers.value = []
       }
-    const { data } = await axios.get('/customers/',{ params})
+    const { data } = await axios.get('/v1/chq/customers/',{ params})
     customers.value = data
   } catch (error) {
     console.error('error fetching customers', error)

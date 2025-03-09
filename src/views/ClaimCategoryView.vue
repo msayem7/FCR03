@@ -2,27 +2,26 @@
     <div class="container mt-4">
       <WorkingBranchSelector />
       <div class="mt-4">
-        <h2>Claims</h2>
-        <button class="btn btn-primary mb-3" @click="openAddModal">Add Claim</button>
+        <h2>Claim Categories</h2>
+        <button class="btn btn-primary mb-3" @click="openAddModal">Add Category</button>
         <table class="table table-striped">
           <thead>
             <tr>
-              <th>Claim Name</th>
+              <th>Claim Category Name</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="claim in claims" :key="claim.alias_id">
-              <td>{{ claim.claim_name }}</td>
+            <tr v-for="claim_category in claim_categories" :key="claim_category.alias_id">
+              <td>{{ claim_category.category_name }}</td>
               <td>
-                <span :class="{'badge bg-success': claim.is_active, 'badge bg-danger': !claim.is_active}">
-                  {{ claim.is_active ? 'Active' : 'Inactive' }}
+                <span :class="{'badge bg-success': claim_category.is_active, 'badge bg-danger': !claim_category.is_active}">
+                  {{ claim_category.is_active ? 'Active' : 'Inactive' }}
                 </span>
               </td>
               <td>
-                <button class="btn btn-sm btn-warning me-2" @click="openEditModal(claim)">Edit</button>
-                <button class="btn btn-sm btn-danger" @click="deleteClaim(claim.alias_id)">Delete</button>
+                <button class="btn btn-sm btn-warning me-2" @click="openEditModal(claim_category)">Edit</button>
               </td>
             </tr>
           </tbody>
@@ -34,18 +33,18 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">{{ isEditing ? 'Edit Claim' : 'Add Claim' }}</h5>
+              <h5 class="modal-title">{{ isEditing ? 'Edit Claim Category' : 'Add Claim Category' }}</h5>
               <button type="button" class="btn-close" @click="closeModal"></button>
             </div>
             <div class="modal-body">
-              <form @submit.prevent="saveClaim">
+              <form @submit.prevent="saveClaimCategory">
                 <div class="mb-3">
                   <label for="claimName" class="form-label">Claim Name</label>
-                  <input type="text" class="form-control" id="claimName" v-model="currentClaim.claim_name" required />
+                  <input type="text" class="form-control" id="claimName" v-model="currentClaimCategory.category_name" required />
                 </div>
                 <div class="mb-3">
                   <label for="claimStatus" class="form-label">Status</label>
-                  <select class="form-select" id="claimStatus" v-model="currentClaim.is_active" required>
+                  <select class="form-select" id="claimStatus" v-model="currentClaimCategory.is_active" required>
                     <option :value="true">Active</option>
                     <option :value="false">Inactive</option>
                   </select>
@@ -74,33 +73,33 @@
   import { useBranchStore } from '@/stores/branchStore';
   
   const branchStore = useBranchStore();
-  const claims = ref([]);
+  const claim_categories = ref([]);
   const isModalOpen = ref(false);
   const isEditing = ref(false);
-  const currentClaim = ref({ claim_name: '', is_active: true });
+  const currentClaimCategory = ref({ category_name: '', is_active: true });
   const errorMessage = ref('');
   
-  const fetchClaims = async () => {
+  const fetchClaimCategories = async () => {
     if (branchStore.selectedBranch) {
       try {
-        const response = await axios.get(`/v1/chq/master-claims/?branch=${branchStore.selectedBranch}`);
-        claims.value = response.data;
+        const response = await axios.get(`/v1/chq/claim-categories/?branch=${branchStore.selectedBranch}`);
+        claim_categories.value = response.data;
       } catch (error) {
-        errorMessage.value = 'Error fetching claims: ' + error.message;
+        errorMessage.value = 'Error fetching claim categories: ' + error.message;
       }
     }
   };
   
-  watch(() => branchStore.selectedBranch, fetchClaims, { immediate: true });
+  watch(() => branchStore.selectedBranch, fetchClaimCategories, { immediate: true });
   
   const openAddModal = () => {
-    currentClaim.value = { claim_name: '', is_active: true };
+    currentClaimCategory.value = { category_name: '', is_active: true };
     isEditing.value = false;
     isModalOpen.value = true;
   };
   
-  const openEditModal = (claim) => {
-    currentClaim.value = { ...claim };
+  const openEditModal = (claim_category) => {
+    currentClaimCategory.value = { ...claim_category };
     isEditing.value = true;
     isModalOpen.value = true;
   };
@@ -109,28 +108,28 @@
     isModalOpen.value = false;
   };
   
-  const saveClaim = async () => {
+  const saveClaimCategory = async () => {
     try {
       if (isEditing.value) {
-        await axios.put(`/v1/chq/master-claims/${currentClaim.value.alias_id}/`, currentClaim.value);
+        await axios.put(`/v1/chq/claim-categories/${currentClaimCategory.value.alias_id}/`, currentClaimCategory.value);
       } else {
-        await axios.post('/v1/chq/master-claims/', { ...currentClaim.value, branch: branchStore.selectedBranch });
+        await axios.post('/v1/chq/claim-categories/', { ...currentClaimCategory.value, branch: branchStore.selectedBranch });
       }
-      fetchClaims();
+      fetchClaimCategories();
       closeModal();
     } catch (error) {
-      errorMessage.value = 'Error saving claim: ' + error.message;
+      errorMessage.value = 'Error saving claim categry: ' + error.message;
     }
   };
   
-  const deleteClaim = async (alias_id) => {
-    try {
-      await axios.delete(`/v1/chq/master-claims/${alias_id}/`);
-      fetchClaims();
-    } catch (error) {
-      errorMessage.value = 'Error deleting claim: ' + error.message;
-    }
-  };
+//   const deleteClaim = async (alias_id) => {
+//     try {
+//       await axios.delete(`/v1/chq/master-claims/${alias_id}/`);
+//       fetchClaims();
+//     } catch (error) {
+//       errorMessage.value = 'Error deleting claim: ' + error.message;
+//     }
+//   };
   </script>
   
   <style scoped>

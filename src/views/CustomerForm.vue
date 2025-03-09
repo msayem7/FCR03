@@ -111,8 +111,8 @@
   const submitForm = async () => {
     try {
       const url = formData.value.alias_id
-        ? `/customers/${formData.value.alias_id}/`
-        : '/customers/'
+        ? `/v1/chq/customers/${formData.value.alias_id}/`
+        : '/v1/chq/customers/'
       const method = formData.value.alias_id ? 'put' : 'post'
       formData.value.branch = branchStore.selectedBranch
       await axios[method](url, formData.value)

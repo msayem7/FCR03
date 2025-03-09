@@ -53,12 +53,12 @@
   
   const loadBranches = async () => {
     try {
-      axios.get('/branches/');
+      axios.get('/v1/chq/branches/');
      
       // const response = await axios.get('/branches/');
       // const data = response.data;
       // the short form of above two lines is const { data } = await axios.get('/branches/') 
-      const { data } = await axios.get('/branches/') 
+      const { data } = await axios.get('/v1/chq/branches/') 
       
       branches.value = data
       branches.value.forEach(branch => {

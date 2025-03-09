@@ -16,7 +16,7 @@ export const useBranchStore = defineStore('credit', {
         async loadBranches() {
             const authStore = useAuthStore();
             if (!authStore.user) return;
-            const { data } = await axios.get('/branches/');
+            const { data } = await axios.get('v1/chq/branches/');
             this.branches = data;
             if (this.selectedBranch && !this.branches.some(b => b.alias_id === this.selectedBranch)) {
                 this.selectedBranch = null;
