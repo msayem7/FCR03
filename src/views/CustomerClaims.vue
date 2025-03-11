@@ -9,28 +9,45 @@
     </div>
 
     <div v-else>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Claim Name</th>
-            <th>Claim Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="claim in claims" :key="claim.alias_id">
-            <td>{{ claim.claim_name }}</td>
-            <td>
-              <input
-                type="number"
-                v-model="claim.claim_amount"
-                @blur="validateNumber(claim)"
-                class="form-control"
-                :disabled="!claim.is_active && !claim.existing"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div >
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th style="width: 40%">Claim Name</th>
+              <th style="width: 30%">Claim Date</th>
+              <th style="width: 30%">Claim Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="claim in claims" :key="claim.alias_id">
+              <td>{{ claim.claim_name }}</td>        
+              <td >
+                <div class="col-12">
+                  <input
+                    type="date"
+                    v-model="claim.claim_date"
+                    class="form-control form-control-sm"
+                    :disabled="!claim.is_active && !claim.existing"
+                     style="min-width: 150px"
+                  />
+                </div>
+              </td>
+              <td>
+                <div class="col-12">
+                  <input
+                    type="number"
+                    v-model="claim.claim_amount"
+                    @blur="validateNumber(claim)"
+                    class="form-control form-control-sm"
+                    :disabled="!claim.is_active && !claim.existing"
+                    style="min-width: 150px"
+                  />
+                </div>                
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>      
     </div>
   </div>
 </template>
@@ -73,29 +90,34 @@ const fetchClaims = async () => {
     const { data: masterClaimsData } = await axios.get('/v1/chq/master-claims/', { params });
     let claimsData1 = masterClaimsData.map((claim) => ({
         ...claim,
+        claim_date: new Date().toISOString().split('T')[0],  // Default to today
         claim_amount: 0, // Default amount for new claims
         existing: false, // Indicates if this is an existing claim
     }));
+    // console.log('claimsData1: ', claimsData1)
     if (props.invoiceAliasId){
       const { data: customerClaimsData } = await axios.get(`/v1/chq/customer-claims/?invoice=${props.invoiceAliasId}`);
-      console.log('customerClaimsData: ', customerClaimsData)
+      // console.log('customerClaimsData: ', customerClaimsData)
       const claimsData2 = customerClaimsData.map((claim) => ({
           ...claim,
+          claim_date: claim?.claim_date?.split('T')[0],
           existing: true, // Indicates if this is an existing claim
       }));
-
+      // console.log('claimsData2 : ', claimsData2)
       // Create a Set to track unique claim names in claimsData2
-      const uniqueNames = new Set(claimsData2.map(claim => claim.name));
+      const uniqueNames = new Set(claimsData2.map(claim => claim.claim_name));
 
+      // console.log('uniqueNames: ', uniqueNames)
       // Filter out duplicates from claimsData1 based on claim.name
-      claimsData1 = claimsData1.filter(claim => !uniqueNames.has(claim.name));
+      claimsData1 = claimsData1.filter(claim => !uniqueNames.has(claim.claim_name));
+      // console.log('claimsData1 Filtered: ', claimsData1)
 
       // Combine filtered claimsData1 with claimsData2
       claims.value = [...claimsData1, ...claimsData2];
-      console.log('Edit claims.value: ', claims.value)
+      // console.log('Edit claims.value: ', claims.value)
     }else{
       claims.value = [...claimsData1]        
-      console.log('Add claims.value: ', claims.value)
+      // console.log('Add claims.value: ', claims.value)
     }
     
     // // Fetch active claims for new invoices
@@ -158,7 +180,28 @@ defineExpose({
   margin-top: 10px;
 }
 
+/* Override Bootstrap's default input styles */
+.form-control-sm {
+  height: calc(1.5em + 0.5rem + 2px) !important;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  height: 1em;
+}
+</style>
+<!-- 
+
+<style scoped>
+.customer-claims {
+  margin-top: 20px;
+}
+
+.table {
+  margin-top: 10px;
+}
+
 .form-control {
   width: 100px;
 }
-</style>
+</style> -->
