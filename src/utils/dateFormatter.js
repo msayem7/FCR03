@@ -16,3 +16,12 @@ export function formatDate(dateString) {
       day: 'numeric' 
     })
   }
+
+  
+export function formatNumber (value, decimals = 0)  {
+  return Number(value).toFixed(decimals)
+}
+  
+// export const formatNumber = (value, decimals = 0) => {
+//   return Number(value).toFixed(decimals)
+// }

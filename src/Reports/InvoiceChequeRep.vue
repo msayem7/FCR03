@@ -57,10 +57,11 @@
                 <th>Sale Date</th>
                 <th>Grace</th>
                 <th>Sale Amount</th>
-                <th>Claims</th>
-                <th>Net Sales</th>
+                <th>Return</th>
+                <th>Net Sale</th>
                 <th>Received</th>
                 <th>Cleared</th>
+                <th>Claims</th>
                 <th>Total Due</th>
               </tr>
             </thead>
@@ -70,13 +71,14 @@
                 <td>{{ item.invoice_no }}</td>
                 <td>{{ formatDate(item.transaction_date) }}</td>
                 <td>{{ item.payment_grace_days }}</td>
-                <td>{{ item.due_amount }}</td>
-                <td>{{ item.total_claim }}</td>
-                <td>{{ item.net_sales }}</td>
-                <td>{{ item.received }}</td>
-                <td>{{ item.Cleared }}</td>
+                <td>{{ formatNumber(item.due_amount) }}</td>
+                <td>{{ formatNumber(item.sales_return) }}</td>
+                <td>{{ formatNumber(item.net_sales) }}</td>
+                <td>{{ formatNumber(item.received) }}</td>
+                <td>{{ formatNumber(item.cleared) }}</td>
+                <td>{{ formatNumber(item.total_claim) }}</td>
                 <td :class="{ 'text-danger': item.total_due < 0 }">
-                  {{ item.total_due }}
+                  {{ formatNumber(item.total_due)}}
                 </td>
               </tr>
             </tbody>
@@ -91,9 +93,7 @@
 import { ref } from 'vue'  // Make sure to import ref
 import axios from '@/plugins/axios'
 import { useBranchStore } from '@/stores/branchStore'
-import { formatDate } from '@/utils/dateFormatter'
-
-
+import { formatDate, formatNumber } from '@/utils/dateFormatter'
 
 const reportData = ref([])
 const loading = ref(false)
@@ -203,37 +203,5 @@ const exportPDF = async () => {
   }
 }
 
-// const exportPDF = async () => {
-//   const params = new URLSearchParams({
-//     ...filters.value,
-//     branch: branchStore.selectedBranch
-//   }).toString();
-//   window.location = `/api/reports/ci-vs-cheque/export_pdf/?${params}`; // Added leading slash
-// };
 
-// const exportExcel = async () => {
-//   const params = new URLSearchParams({
-//     ...filters.value,
-//     branch: branchStore.selectedBranch // Include branch parameter
-//   }).toString();
-//   window.location = `api/reports/ci-vs-cheque/export_excel/?${params}`;
-// };
-
-// const exportPDF = async () => {
-//   const params = new URLSearchParams({
-//     ...filters.value,
-//     branch: branchStore.selectedBranch // Include branch parameter
-//   }).toString();
-//   window.location = `api/reports/ci-vs-cheque/export_pdf/?${params}`;
-// };
-
-// const exportExcel = async () => {
-//   const params = new URLSearchParams(filters.value).toString()
-//   window.location = `/api/reports/ci-vs-cheque/excel/?${params}`
-// }
-
-// const exportPDF = async () => {
-//   const params = new URLSearchParams(filters.value).toString()
-//   window.location = `/api/reports/ci-vs-cheque/pdf/?${params}`
-// }
 </script>
