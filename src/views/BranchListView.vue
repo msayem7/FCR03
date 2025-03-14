@@ -1,9 +1,9 @@
 <template>
     <div class="container mt-4">
       <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Branch Management</h2>
+        <h2>Office Management</h2>
         <router-link to="/branches/create" class="btn btn-primary">
-          <i class="bi bi-plus-circle me-2"></i>Create New Branch
+          <i class="bi bi-plus-circle me-2"></i>Create New Office
         </router-link>
       </div>
   
@@ -64,7 +64,7 @@
       branches.value.forEach(branch => {
       });
     } catch (error) {
-      console.error('Error loading branches:', error)
+      console.error('Error loading offices:', error)
     }
   }
   

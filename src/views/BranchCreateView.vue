@@ -1,6 +1,6 @@
 <template>
     <div>
-      <h2>Create New Branch</h2>
+      <h2>Create New Office</h2>
       <BranchFormView @submit="handleCreate"/>
     </div>
   </template>

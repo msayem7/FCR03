@@ -235,8 +235,8 @@ const validateAdjustment = (invoice) => {
 
 const handleSubmit = async () => {
   try {
-    const branch = localStorage.getItem('workingBranch')
-    if (!branch) throw new Error('Select a branch first')
+    const branch = localStorage.getItem('workingOffice')
+    if (!branch) throw new Error('Select a working office first')
     
     const formData = new FormData()
     Object.entries(form.value).forEach(([key, val]) => {
@@ -290,7 +290,7 @@ const handleSubmit = async () => {
 watch(() => branchStore.selectedBranch, (newBranch, oldBranch) => {
   if (oldBranch && newBranch !== oldBranch) {
     // Show alert to user
-    alert('Branch has changed. Redirecting to cheque list.')
+    alert('Office has changed. Redirecting to cheque list.')
     // Redirect to cheques list
     router.push('/cheques')
   }

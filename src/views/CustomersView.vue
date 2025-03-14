@@ -17,7 +17,7 @@
         <tbody>
           <tr v-for="customer in customers" :key="customer.alias_id">
             <td>{{ customer.name }}</td>
-            <td>{{ customer.is_parent ? 'Parent' : 'Branch/Individual' }}</td>
+            <td>{{ customer.is_parent ? 'Head office' : 'Office' }}</td>
             <td>{{ customer.parent_name || '-' }}</td>
             <td>{{ customer.grace_days || '-' }}</td>
             <td>{{ customer.is_active ? 'Active' : 'Inactive' }}</td>
@@ -60,7 +60,7 @@
       //console.log('branchStore.selectedBranch: ',branchStore.selectedBranch)
       if (!branchStore.selectedBranch) {
         customers.value = []
-        throw new Error('Select a branch first')
+        throw new Error('Select the working office first')
       }
       
       const params = {

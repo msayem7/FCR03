@@ -122,7 +122,7 @@
         { name: 'Credit Invoices', link: '/credit-invoices', icon: 'bi-cash-coin' }, ///claim/categories/
         // { name: 'Deductions', link: '/deductions', icon: 'bi bi-receipt-cutoff' },
         {
-          name: 'Branches',
+          name: 'Offices',
           link: '/branches',
           icon: 'bi-building'
         },

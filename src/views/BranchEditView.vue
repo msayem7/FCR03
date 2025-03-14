@@ -1,6 +1,6 @@
 <template>
     <div v-if="branch">
-      <h2>Edit Branch</h2>
+      <h2>Edit Office</h2>
       <BranchFormView
         :initial-data="branch" 
         :is-editing="true" 

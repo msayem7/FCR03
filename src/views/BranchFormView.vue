@@ -1,16 +1,16 @@
 <template>
   <div class="container mt-4">
-    <h2>{{ isEditing ? 'Edit' : 'Create' }} Branch</h2>
+    <h2>{{ isEditing ? 'Edit' : 'Create' }} Office</h2>
     
     <form @submit.prevent="handleSubmit">
       <div class="row g-3">
         <div class="col-md-6">
-          <label class="form-label">Branch Name</label>
+          <label class="form-label">Office Name</label>
           <input v-model="formData.name" type="text" class="form-control" required>
         </div>
 
         <div class="col-md-6">
-          <label class="form-label">Branch Type</label>
+          <label class="form-label">Office Type</label>
           <select v-model="formData.branch_type" class="form-select" required>
             <option v-for="(label, value) in branchTypeMap" 
                     :key="value" 
@@ -21,7 +21,7 @@
         </div>
 
         <div class="col-12">
-          <label class="form-label">Parent Branch</label>
+          <label class="form-label">Head Office</label>
           <select v-model="formData.parent" class="form-select">
             <option :value="null">No Parent</option>
             <option v-for="branch in availableParents" 
@@ -34,7 +34,7 @@
         <!-- Add address and contact fields -->
         <div class="col-12">
           <button type="submit" class="btn btn-primary">
-            {{ isEditing ? 'Update' : 'Create' }} Branch
+            {{ isEditing ? 'Update' : 'Create' }} Office
           </button>
         </div>
       </div>
@@ -52,7 +52,7 @@ const route = useRoute()
 const router = useRouter()
 
 const isEditing = computed(() => route.path.includes('/edit/'))
-const branchTypeMap = { 1: 'Head Office', 2: 'Branch' }
+const branchTypeMap = { 1: 'Head Office', 2: 'Office' }
 
 const formData = ref({
   name: '',

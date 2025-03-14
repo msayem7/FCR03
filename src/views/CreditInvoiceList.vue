@@ -87,7 +87,7 @@ const fetchInvoices = async () => {
   try {
     if (!store.selectedBranch) {
       invoices.value = []
-      throw new Error('Select a branch first')
+      throw new Error('Select the working office first')
     }
 
     const params = {

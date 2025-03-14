@@ -274,8 +274,8 @@ const fetchInvoice = async () => {
 const handleSubmit = async () => {
   try {
     submitting.value = true
-    const branch = localStorage.getItem('workingBranch')
-    if (!branch) throw new Error('Select a branch first')
+    const branch = localStorage.getItem('workingOffice')
+    if (!branch) throw new Error('Select the working office first')
     
     // Get claims data from child component
     const allClaims = customerClaimsRef.value?.claims || []
