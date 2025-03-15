@@ -5,7 +5,7 @@ import { useAuthStore } from './authStore';
 
 export const useBranchStore = defineStore('credit', {   
     state: () => ({
-        selectedBranch: localStorage.getItem('workingBranch') || null,        
+        selectedBranch: localStorage.getItem('workingOffice') || null,        
         branches: [],        
         refreshTrigger: 0,
     }), 
@@ -20,12 +20,12 @@ export const useBranchStore = defineStore('credit', {
             this.branches = data;
             if (this.selectedBranch && !this.branches.some(b => b.alias_id === this.selectedBranch)) {
                 this.selectedBranch = null;
-                localStorage.removeItem('workingBranch');
+                localStorage.removeItem('workingOffice');
             }
         },
         setWorkingBranch(branch) {
             this.selectedBranch = branch;
-            localStorage.setItem('workingBranch', branch);
+            localStorage.setItem('workingOffice', branch);
             this.refreshTrigger++; // Increment the refresh trigger
         },
     },

@@ -94,12 +94,12 @@ const fetchCheques = async () => {
     
     if (!store.selectedBranch) {
       cheques.value = []
-    throw new Error('Select the working office first')
+    throw new Error('Select a working office first')
   }
   // const branch = localStorage.getItem('workingOffice')
   // if (!branch) {
   //   cheques.value = []
-  //   throw new Error('Select the working office first')
+  //   throw new Error('Select a working office first')
   // }
     
     const params = {

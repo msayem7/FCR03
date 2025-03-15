@@ -275,7 +275,7 @@ const handleSubmit = async () => {
   try {
     submitting.value = true
     const branch = localStorage.getItem('workingOffice')
-    if (!branch) throw new Error('Select the working office first')
+    if (!branch) throw new Error('Select a working office first')
     
     // Get claims data from child component
     const allClaims = customerClaimsRef.value?.claims || []
