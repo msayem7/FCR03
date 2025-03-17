@@ -48,7 +48,7 @@
   const branches = ref([])
   const branchTypeMap = {
     1: 'Head Office',
-    2: 'Branch'
+    2: 'Office'
   }
   
   const loadBranches = async () => {
