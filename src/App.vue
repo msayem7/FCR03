@@ -1,7 +1,7 @@
 
 
 <template>
-  
+  <ErrorNotification />
   <WorkingBranchSelector v-if="showNav" />
   <NavigationBar v-if="showNav" />
   <router-view v-slot="{ Component }">
@@ -14,16 +14,17 @@
 //   name: 'App',
 
 // }
-  import { computed, onMounted } from 'vue'
-  import { useAuthStore } from '@/stores/authStore'
-  import { useBranchStore } from '@/stores/branchStore'
+import ErrorNotification from '@/components/ErrorNotification.vue'
+import { computed, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
+import { useBranchStore } from '@/stores/branchStore'
 
-  import { useRoute } from 'vue-router'
-  import NavigationBar from './components/NavigationBar.vue'
-  import WorkingBranchSelector from '@/components/WorkingBranchSelector.vue'
+import { useRoute } from 'vue-router'
+import NavigationBar from './components/NavigationBar.vue'
+import WorkingBranchSelector from '@/components/WorkingBranchSelector.vue'
 
-  const route = useRoute()
-  const showNav = computed(() => !route.meta.hideNav)
+const route = useRoute()
+const showNav = computed(() => !route.meta.hideNav)
   
 const authStore = useAuthStore()
 const branchStore = useBranchStore()

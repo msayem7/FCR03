@@ -31,22 +31,45 @@ import { ref } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
 import { useBranchStore } from '@/stores/branchStore'
+import { useNotificationStore } from '@/stores/notificationStore'
 
 
 export default {
   setup() {
     const credentials = ref({ username: '', password: '' });
-    const authStore = useAuthStore();
+    const notificationStore = useNotificationStore()
     const branchStore = useBranchStore();
+    const authStore = useAuthStore();
     const router = useRouter();
-
     const login = async () => {
-      await authStore.login(credentials.value);      
-      await branchStore.loadBranches();
-      router.push('/cheque-dashboard');
-    };
+      try {
+        await authStore.login(credentials.value)
+        await branchStore.loadBranches()
+        router.push('/cheque-dashboard')
+      } catch (error) {
+        notificationStore.showError(
+          error.message || 'Login failed. Please check your credentials'
+        )
+      }
+    }
 
-    return { credentials, login };
-  },
-};
+    return { credentials, login }
+  }
+}
+// export default {
+//   setup() {
+//     const credentials = ref({ username: '', password: '' });
+//     const authStore = useAuthStore();
+//     const branchStore = useBranchStore();
+//     const router = useRouter();
+
+//     const login = async () => {
+//       await authStore.login(credentials.value);      
+//       await branchStore.loadBranches();
+//       router.push('/cheque-dashboard');
+//     };
+
+//     return { credentials, login };
+//   },
+// };
 </script>

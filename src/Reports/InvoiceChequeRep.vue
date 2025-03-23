@@ -23,10 +23,6 @@
             </div>
           </div>
         <div class="filters">
-          <!-- <input type="date" v-model="filters.date_from">
-          <input type="date" v-model="filters.date_to">
-          <input type="number" v-model="filters.min_amount" placeholder="Min Amount">
-          <input type="number" v-model="filters.max_amount" placeholder="Max Amount"> -->
           <div class="d-flex gap-2 mb-3">
             <button class="btn btn-primary" @click="loadReport">
               <i class="bi bi-search"></i> Generate
@@ -44,9 +40,6 @@
               <span class="visually-hidden">Loading...</span>
             </div>
           </div>
-          <!-- <button @click="loadReport">Generate</button>
-          <button @click="exportExcel">Excel</button>
-          <button @click="exportPDF">PDF</button> -->
         </div>
         <div v-if="reportData.length" class="table-responsive">
           <table class="table table-striped table-hover">

@@ -30,19 +30,28 @@ export const useAuthStore = defineStore('auth', {
         async login(credentials) {
             try {
                 const response = await axios.post('/v1/chq/token/', credentials);
+
+                if (!response.data.access) {
+                    throw new Error('Invalid server response');
+                  }
                 
-                if (response.data.access && response.data.user) {
-                    this.token = response.data.access;
-                    this.user = response.data.user;
-                    localStorage.setItem('token', this.token);
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;
-                    return true;
-                }
-                throw new Error('Invalid response format');
+                // if (response.data.user) {
+                this.token = response.data.access;
+                // this.user = response.data.user;
+                localStorage.setItem('token', this.token);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`;// Fetch user data
+                await this.fetchUser();
+                return true;
+                // }
+                // throw new Error('Invalid response format');
             } catch (error) {
-                console.error('Login error:', error.response?.data || error.message);
+                // console.error('Login error:', error.response?.data || error.message);
                 this.logout();
-                throw error;
+                if (error.response?.status === 401) {
+                    throw new Error('Invalid username or password');
+                  }
+                  
+                throw error; // Let global interceptor handle
             }
         },
         // async login(credentials) {
@@ -61,5 +70,15 @@ export const useAuthStore = defineStore('auth', {
             localStorage.removeItem('token');
             delete axios.defaults.headers.common['Authorization'];
         },
+        async fetchUser() {
+            try {
+                const response = await axios.get('/v1/chq/user/');
+                this.user = response.data;
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
+                this.logout();
+                throw error;
+            }
+        }
     },
 });
