@@ -37,7 +37,9 @@
             <th>Customer</th>
             <th>Invoice Date</th>
             <th>Payment Date</th>
-            <th>Amount</th>
+            <th>Sale</th>
+            <th>Return</th>
+            <th>Net Sale</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -45,9 +47,11 @@
           <tr v-for="(invoice, index) in invoices" :key="invoice.alias_id">
             <td>{{ invoice.invoice_no }} ({{ index + 1 }}/{{ invoices.length }})</td>
             <td>{{ invoice.customer_name }}</td>
-            <td>{{ new Date(invoice.transaction_date).toLocaleDateString() }}</td>
-            <td>{{ calculatePaymentDate(invoice) }}</td>
-            <td>{{ invoice.due_amount }}</td>
+            <td>{{ formatDate(invoice.transaction_date) }}</td>
+            <td>{{ formatDate(calculatePaymentDate(invoice)) }}</td>
+            <td>{{ formatNumber(invoice.sales_amount) }}</td>
+            <td>{{ formatNumber(invoice.sales_return) }}</td>
+            <td>{{ formatNumber(invoice.sales_amount -invoice.sales_return)}}</td>
             <td>
               <router-link 
                 :to="{ name: 'CreditInvoiceEdit', params: { aliasId: invoice.alias_id }}" 
@@ -72,6 +76,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useBranchStore } from '@/stores/branchStore'
 import axios from '@/plugins/axios'
+import { formatDate, formatNumber } from '@/utils/dateFormatter'
 
 
 const store = useBranchStore()

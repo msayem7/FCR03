@@ -66,18 +66,41 @@
           <label for="transactionDate">Transaction Date</label>
         </div>
 
-        <!-- Due Amount -->
+        <!-- sales Amount -->
         <div class="col-md-6 form-floating">
           <input 
-            v-model="form.due_amount" 
+            v-model="form.sales_amount" 
             type="number" 
-            step="0.01" 
             class="form-control" 
-            id="dueAmount"
+            id="sales_amount"
             placeholder=" "
             required
           >
-          <label for="dueAmount">Due Amount</label>
+          <label for="sales_amount">Sales Amount</label>
+        </div>
+        
+        <div class="col-md-6 form-floating">
+          <input 
+            v-model="form.sales_return" 
+            type="number" 
+            class="form-control" 
+            id="sales_return"
+            placeholder=" "
+            required
+          >
+          <label for="sales_return">Sales Return</label>
+        </div>
+
+        <div class="col-md-6 form-floating">
+          <input 
+            :value="net_sales" 
+            type="Number" 
+            class="form-control" 
+            id="net_sales"
+            placeholder=" "
+            readonly
+          >
+          <label for="net_sales">Net Sales</label>
         </div>
 
         <!-- Grace Days -->
@@ -92,7 +115,7 @@
           >
           <label for="graceDays">Grace Days</label>
         </div>
-
+        
         <!-- Payment Date -->
         <div class="col-md-6 form-floating">
           <input 
@@ -143,14 +166,14 @@
           </div>
           
         </div>
-        <div class="col-12">
+        <!-- <div class="col-12">
           <CustomerClaims
             ref="customerClaimsRef"
             v-if="form.invoice_no"
             :customerAliasId="form.customer"
             :invoiceAliasId="invoiceId"
           />
-        </div>
+        </div> -->
 
         <!-- Action Buttons -->
         <div class="col-12">
@@ -170,7 +193,8 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
 import { useBranchStore } from '@/stores/branchStore'
-import CustomerClaims from '@/views/CustomerClaims.vue'
+// import CustomerClaims from '@/views/CustomerClaims.vue'
+import { Number } from 'core-js'
 
 const store = useBranchStore()
 const route = useRoute()
@@ -188,14 +212,15 @@ const existingImageUrl = ref(null)
 const editing = ref(false)
 const invoiceId = ref(null)
 const customers = ref([])
-const customerClaimsRef = ref(null)
+// const customerClaimsRef = ref(null)
 
 // Form data
 const form = ref({
   invoice_no: '',
   customer: '',
   transaction_date: '',
-  due_amount: 0,
+  sales_amount: 0,
+  sales_return: 0,
   invoice_image: null,
   version: 1
 })
@@ -212,6 +237,17 @@ const paymentDate = computed(() => {
   if (graceDays.value) date.setDate(date.getDate() + graceDays.value)
   return date.toISOString().split('T')[0]
 })
+
+
+const net_sales = computed(() => {
+  // Convert the input to floating-point numbers.
+  const sales = parseFloat(form.value.sales_amount) || 0;
+  const sales_return = parseFloat(form.value.sales_return) || 0;
+
+  // Calculate net sales. Optionally, fix it to two decimal places.
+  const netSales = sales - sales_return;
+  return parseFloat(netSales.toFixed(2)); // returns a number with two decimals
+});
 
 // File handling
 const handleFile = (e) => {
@@ -278,19 +314,19 @@ const handleSubmit = async () => {
     if (!branch) throw new Error('Select a working office first')
     
     // Get claims data from child component
-    const allClaims = customerClaimsRef.value?.claims || []
-    const claimsToSave = allClaims.filter(c => {
-      // Filter out zero amounts and invalid claims
-      return Number(c.claim_amount) !== 0 && c.claim_amount !== ''
-    }).map(c => ({
-      alias_id: c.alias_id,
-      claim_amount: c.claim_amount,
-      existing: c.existing
-    }))
+    // const allClaims = customerClaimsRef.value?.claims || []
+    // const claimsToSave = allClaims.filter(c => {
+    //   // Filter out zero amounts and invalid claims
+    //   return Number(c.claim_amount) !== 0 && c.claim_amount !== ''
+    // }).map(c => ({
+    //   alias_id: c.alias_id,
+    //   claim_amount: c.claim_amount,
+    //   existing: c.existing
+    // }))
 
     const formData = new FormData()
     formData.append('version', form.value.version)
-    formData.append('claims', JSON.stringify(claimsToSave))
+    // formData.append('claims', JSON.stringify(claimsToSave))
     
     Object.entries(form.value).forEach(([key, val]) => {
       if (key === 'invoice_image') {
