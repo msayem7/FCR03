@@ -132,8 +132,9 @@
     {
       name: 'Cheques',
       icon: 'bi-wallet2',
-      submenu: [
-        { name: 'Cheques', link: '/cheques', icon: 'bi-list-ul' },
+      submenu: [      
+      { name: 'Customer Payment', link: '/cheques/customer/payments', icon: 'bi-list-ul' },
+      { name: 'Cheques', link: '/cheques', icon: 'bi-list-ul' },
         { name: 'Pending Cheque', link: '/cheques/pending', icon: 'bi-clock-history' },
         { name: 'Deposited Cheque', link: '/cheques/deposited', icon: 'bi-check-circle' }
       ]

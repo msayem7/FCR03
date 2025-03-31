@@ -1,207 +1,150 @@
 <template>
-  <div class="customer-claims">
-    
-    <div v-if="loadingClaims" class="text-center">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <p class="mt-2">Loading claims...</p>
-    </div>
-
-    <div v-else>
-      <div >
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th style="width: 40%">Claim Name</th>
-              <th style="width: 30%">Claim Date</th>
-              <th style="width: 30%">Claim Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="claim in claims" :key="claim.alias_id">
-              <td>{{ claim.claim_name }}</td>        
-              <td >
-                <div class="col-12">
-                  <input
-                    type="date"
-                    v-model="claim.claim_date"
-                    class="form-control form-control-sm"
-                    :disabled="!claim.is_active && !claim.existing"
-                     style="min-width: 150px"
-                  />
-                </div>
-              </td>
-              <td>
-                <div class="col-12">
-                  <input
-                    type="number"
-                    v-model="claim.claim_amount"
-                    @blur="validateNumber(claim)"
-                    class="form-control form-control-sm"
-                    :disabled="!claim.is_active && !claim.existing"
-                    style="min-width: 150px"
-                  />
-                </div>                
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>      
+  <div class="card">
+    <div class="card-header">Customer Claims</div>
+    <div class="card-body p-0">
+      <table class="table table-bordered m-0">
+        <thead>
+          <tr>
+            <th style="width: 20%">Claims</th>
+            <th style="width: 15%">Number</th>
+            <th style="width: 50%">Details</th>
+            <th style="width: 15%">Amount</th>
+            <!-- <th style="width: 5%" class="text-center">X</th> -->
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(claim, index) in localClaims" :key="index">            
+            <td>
+              <input
+                v-model="claim.claim_name"
+                type="text"
+                class="form-control border-0"
+                placeholder="Claim Name"
+                disabled
+              >
+            </td>
+            <td>
+              <input
+                v-model="claim.claim_no"
+                type="text"
+                class="form-control border-0"
+                placeholder="Claim No"
+              >
+            </td>
+            <td>
+              <input
+                v-model="claim.details"
+                type="text"
+                class="form-control border-0"
+                placeholder="Details"
+              >
+            </td>
+            <td class="text-right align-middle">
+              <input
+                v-model="localClaims[index].formatted_amount"
+                type="text"
+                @blur="formatClaimAmount(index)"
+                class="form-control border-0 text-end"
+                placeholder="Amount"
+              >
+            </td>
+            <!-- <td class="text-center align-middle">
+              <button 
+                @click="removeClaim(index)"
+                class="btn btn-danger btn-sm py-0 px-2"
+                title="Remove Claim"
+                style="min-width: 28px;"
+              >
+                ×
+              </button>
+            </td> -->
+          </tr>
+        </tbody>
+      </table>
+      <!-- <div class="p-2">
+        <button @click="addClaim" class="btn btn-sm btn-secondary">
+          Add Claim
+        </button>
+      </div> -->
     </div>
   </div>
 </template>
 
+
 <script setup>
-import { ref, defineProps, defineExpose, onMounted, watch } from 'vue';
-import axios from '@/plugins/axios';
-import { useBranchStore } from '@/stores/branchStore';
+import { ref, watchEffect } from 'vue'
+import { formatNumber, parseNumber } from '@/utils/ezFormatter'
+// eslint-disable-next-line
+const props = defineProps(['claims'])
+// eslint-disable-next-line
+const emit = defineEmits(['update:claims'])
 
-const props = defineProps({
-  invoiceAliasId: String, // For existing invoices 
-  customerAliasId: String, // For new invoices 
-});
+const localClaims = ref(props.claims.map(c => ({
+  ...c,
+  formatted_amount: formatNumber(c.claim_amount)
+})))
 
-const branchStore = useBranchStore();
-const claims = ref([]);
-const loadingClaims = ref(false);
-
-// Update input handler to validate numbers
-const validateNumber = (claim) => {
-  const value = parseFloat(claim.claim_amount)
-  if (isNaN(value)) {
-    claim.claim_amount = 0
-  } else {
-    claim.claim_amount = Math.max(0, value).toFixed(4)
-  }
+function updateClaims() {
+  emit('update:claims', localClaims.value.map(c => ({
+    ...c,
+    claim_amount: parseNumber(c.formatted_amount)
+  })))
 }
 
+// function addClaim() {
+//   localClaims.value.push({
+//     claim_no: '',
+//     claim_name: 'New Claim',
+//     details: '',
+//     formatted_amount: formatNumber(0),
+//     claim_amount: 0
+//   })
+//   updateClaims()
+// }
 
-// Fetch claims for the selected branch and customer
-const fetchClaims = async () => {
-  try {
-    loadingClaims.value = true;
-    const params = {
-      branch: branchStore.selectedBranch,
-      is_active: true,
-    };
-    
-//--------------------------------------
-    const { data: masterClaimsData } = await axios.get('/v1/chq/master-claims/', { params });
-    let claimsData1 = masterClaimsData.map((claim) => ({
-        ...claim,
-        claim_date: new Date().toISOString().split('T')[0],  // Default to today
-        claim_amount: 0, // Default amount for new claims
-        existing: false, // Indicates if this is an existing claim
-    }));
-    // console.log('claimsData1: ', claimsData1)
-    if (props.invoiceAliasId){
-      const { data: customerClaimsData } = await axios.get(`/v1/chq/customer-claims/?invoice=${props.invoiceAliasId}`);
-      // console.log('customerClaimsData: ', customerClaimsData)
-      const claimsData2 = customerClaimsData.map((claim) => ({
-          ...claim,
-          claim_date: claim?.claim_date?.split('T')[0],
-          existing: true, // Indicates if this is an existing claim
-      }));
-      // console.log('claimsData2 : ', claimsData2)
-      // Create a Set to track unique claim names in claimsData2
-      const uniqueNames = new Set(claimsData2.map(claim => claim.claim_name));
 
-      // console.log('uniqueNames: ', uniqueNames)
-      // Filter out duplicates from claimsData1 based on claim.name
-      claimsData1 = claimsData1.filter(claim => !uniqueNames.has(claim.claim_name));
-      // console.log('claimsData1 Filtered: ', claimsData1)
+function formatClaimAmount(index) {
+  const parsed = parseNumber(localClaims.value[index].formatted_amount)
+  localClaims.value[index].formatted_amount = formatNumber(parsed)
+  localClaims.value[index].claim_amount = parsed
+  updateClaims()
+}
 
-      // Combine filtered claimsData1 with claimsData2
-      claims.value = [...claimsData1, ...claimsData2];
-      // console.log('Edit claims.value: ', claims.value)
-    }else{
-      claims.value = [...claimsData1]        
-      // console.log('Add claims.value: ', claims.value)
-    }
-    
-    // // Fetch active claims for new invoices
-    // if (!props.invoiceAliasId) {
-    //   const { data } = await axios.get('/master-claims/', { params });
-      // claims.value = data.map((claim) => ({
-      //   ...claim,
-      //   claim_amount: 0, // Default amount for new claims
-      //   existing: false, // Indicates if this is an existing claim
-      // }));
-    // } else {
-    //   // Fetch existing claims for the invoice
-    //   const { data } = await axios.get(`/customer-claims/?invoice=${props.invoiceAliasId}`);
-    //   claims.value = data.map((claim) => ({
-    //     ...claim,
-    //     existing: true, // Indicates if this is an existing claim
-    //   }));
-    // }
-//-----------------------------------------
-
-  } catch (error) {
-    console.error('Error fetching claims:', error);
-    claims.value = []; // Set empty array on error
-  } finally {
-    loadingClaims.value = false;
-  }
-};
-
-// Watch for changes in the selected branch or customer. 
-// Watch is not required. If new then all active master claim are fetched. 
-// If existing then only  the existing claims  + new active which are not in existing claims are fetched
-// If existing then only  the existing claims  + new active which are not in existing claims are fetched
-// and called from onmounted hook 
-
-// watch(
-//   () => [branchStore.selectedBranch, props.customerAliasId],
-//   () => {
-//     if (branchStore.selectedBranch && props.customerAliasId) {
-//       fetchClaims();
-//     }
-//   },
-//   { immediate: true }
-// );
-
-onMounted(async () => {
-await fetchClaims();
+watchEffect(() => {
+  localClaims.value = props.claims.map(c => ({
+    ...c,
+    formatted_amount: formatNumber(c.claim_amount)
+  }))
 })
-// Expose the claims data to the parent component
-defineExpose({
-  claims,
-});
 </script>
 
 <style scoped>
-.customer-claims {
-  margin-top: 20px;
-}
-
-.table {
-  margin-top: 10px;
-}
-
-/* Override Bootstrap's default input styles */
-.form-control-sm {
-  height: calc(1.5em + 0.5rem + 2px) !important;
-}
-
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  height: 1em;
-}
-</style>
-<!-- 
-
-<style scoped>
-.customer-claims {
-  margin-top: 20px;
-}
-
-.table {
-  margin-top: 10px;
+/* Match the cheques table styling */
+.table th {
+  background-color: #f8f9fa;
+  vertical-align: middle;
+  font-size: 0.9rem;
 }
 
 .form-control {
-  width: 100px;
+  background: transparent;
+  padding: 0.25rem;
+  font-size: 0.9rem;
 }
-</style> -->
+
+.form-control:focus {
+  box-shadow: none;
+  background: white;
+}
+
+.btn-danger {
+  line-height: 1.2;
+  font-size: 1.1rem;
+}
+
+/* Disabled input styling */
+.form-control:disabled {
+  background: #f8f9fa;
+  cursor: not-allowed;
+}
+</style>

@@ -17,7 +17,6 @@ const routes = [
     { path: '/', name: 'login', component: Login, meta: { hideNav: true }},
     { path: '/cheque-dashboard', name: 'cheque-dashboard', component: DashboardView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/customers', name: 'customers', component: CustomersView, meta: {requiresAuth: true, hideNav: false} },
-    { path: '/claim/categories/',   name: 'claim-categories', component: () => import('@/views/ClaimCategoryView.vue'), meta: { requiresAuth: true, hideNav: false }},
     { path: '/claims/',   name: 'Master-Claim', component: () => import('@/views/ClaimPage.vue'), meta: { requiresAuth: true, hideNav: false }},
     { path: '/customer/claims', name: 'customer-claims', component: DiductionsView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/cheques', name: 'cheques', component: ChequeListView, meta: {requiresAuth: true, hideNav: false} },
@@ -79,6 +78,12 @@ const routes = [
       path: '/cheques/edit/:aliasId',
       name: 'cheque-edit',
       component: () => import('@/views/ChequeEntryView.vue'),
+      meta: { requiresAuth: true, hideNav: false }
+    },    
+    {
+      path: '/cheques/customer/payments',
+      name: 'customer-payments',
+      component: () => import('@/views/PaymentForm.vue'),
       meta: { requiresAuth: true, hideNav: false }
     }
 ];

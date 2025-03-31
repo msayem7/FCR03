@@ -152,7 +152,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
-import { formatDate } from '@/utils/dateFormatter';
+import { formatDate } from '@/utils/ezFormatter';
 import { useBranchStore } from '@/stores/branchStore';
 
 const branchStore = useBranchStore()

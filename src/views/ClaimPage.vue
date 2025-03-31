@@ -71,7 +71,7 @@
 
   const branchStore = useBranchStore();
   const master_claims = ref([]);
-  const claimCategories = ref([]); // New reactive variable for categories
+  // const claimCategories = ref([]); // New reactive variable for categories
   const isModalOpen = ref(false);
   const isEditing = ref(false);
   const currentClaim = ref({ 
@@ -84,12 +84,11 @@
     if (newBranch) {
       try {
         const [claimsRes, categoriesRes] = await Promise.all([
-          axios.get(`/v1/chq/master-claims/?branch=${newBranch}`),
-          axios.get(`/v1/chq/claim-categories/?branch=${newBranch}`)
+          axios.get(`/v1/chq/master-claims/?branch=${newBranch}`)
         ]);
         
         master_claims.value = claimsRes.data;
-        claimCategories.value = categoriesRes.data;
+        // claimCategories.value = categoriesRes.data;
       } catch (error) {
         console.error('Error loading data:', error);
       }

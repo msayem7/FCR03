@@ -86,7 +86,7 @@
 import { ref } from 'vue'  // Make sure to import ref
 import axios from '@/plugins/axios'
 import { useBranchStore } from '@/stores/branchStore'
-import { formatDate, formatNumber } from '@/utils/dateFormatter'
+import { formatDate, formatNumber } from '@/utils/ezFormatter'
 
 const reportData = ref([])
 const loading = ref(false)

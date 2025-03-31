@@ -36,6 +36,7 @@
             <th>Invoice No</th>
             <th>Customer</th>
             <th>Invoice Date</th>
+            <th>Grace</th>
             <th>Payment Date</th>
             <th>Sale</th>
             <th>Return</th>
@@ -43,11 +44,12 @@
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="(invoice, index) in invoices" :key="invoice.alias_id">
-            <td>{{ invoice.invoice_no }} ({{ index + 1 }}/{{ invoices.length }})</td>
+        <tbody>          
+          <tr v-for="(invoice) in invoices" :key="invoice.alias_id">
+            <td>{{ invoice.invoice_no }} </td>
             <td>{{ invoice.customer_name }}</td>
             <td>{{ formatDate(invoice.transaction_date) }}</td>
+            <td>{{ parseInt(invoice.payment_grace_days) }}</td>
             <td>{{ formatDate(calculatePaymentDate(invoice)) }}</td>
             <td>{{ formatNumber(invoice.sales_amount) }}</td>
             <td>{{ formatNumber(invoice.sales_return) }}</td>
@@ -76,7 +78,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useBranchStore } from '@/stores/branchStore'
 import axios from '@/plugins/axios'
-import { formatDate, formatNumber } from '@/utils/dateFormatter'
+import { formatDate, formatNumber } from '@/utils/ezFormatter'
 
 
 const store = useBranchStore()
@@ -131,7 +133,8 @@ const calculatePaymentDate = (invoice) => {
   const date = new Date(invoice.transaction_date)
   //console.log(invoice.invoice_no, date, date.getDate(), parseInt(invoice.payment_grace_days))
   
-   if (invoice.graceDays) date.setDate(date.getDate() + parseInt(invoice.payment_grace_days))
+  if (invoice.payment_grace_days) 
+    date.setDate(date.getDate() + parseInt(invoice.payment_grace_days))
    return date.toISOString().split('T')[0]
 }
 
