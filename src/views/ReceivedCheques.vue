@@ -19,8 +19,13 @@
                 type="text"
                 v-model="cheque.cheque_no"
                 class="form-control border-0"
+                :class="{ 'is-invalid': chequeErrors[index] }"
                 placeholder="Cheque No"
+                @input="validateChequeNo(index)"
               >
+              <div v-if="chequeErrors[index]" class="invalid-feedback">
+                Cheque number must be unique
+              </div>
             </td>
             <td>
               <input
@@ -83,6 +88,8 @@ import { ref, watchEffect  } from 'vue'
 import { formatDate, parseDate, formatNumber, parseNumber } from '@/utils/ezFormatter'
 
 
+// Add error state
+const chequeErrors = ref([])
 
 // eslint-disable-next-line no-undef
 const props = defineProps(['cheques'])
@@ -92,6 +99,7 @@ const localCheques = ref(props.cheques.map(c => ({
   ...c,
   formatted_amount: formatNumber(c.cheque_amount)
 })))
+
 
 
 function updateCheques() {
@@ -104,17 +112,49 @@ function updateCheques() {
 }
 
 
+function validateChequeNo(index) {
+  const currentChequeNo = localCheques.value[index].cheque_no
+  const duplicates = localCheques.value.filter((chq, idx) => 
+    chq.cheque_no === currentChequeNo && idx !== index
+  )
+  
+  chequeErrors.value[index] = duplicates.length > 0
+  return !chequeErrors.value[index]
+}
+
+
+// function addCheque() {
+//   localCheques.value.push({
+//     cheque_no: '',
+//     cheque_date: new Date().toISOString().split('T')[0],
+//     cheque_detail: '',
+//     formatted_amount: formatNumber(0),
+//     cheque_amount: 0
+//   })
+//   updateCheques()
+// }
+
 function addCheque() {
-  localCheques.value.push({
+  const newCheque = {
     cheque_no: '',
     cheque_date: new Date().toISOString().split('T')[0],
     cheque_detail: '',
     formatted_amount: formatNumber(0),
     cheque_amount: 0
-  })
-  updateCheques()
+  }
+  
+  // Add first then validate
+  localCheques.value.push(newCheque)
+  const newIndex = localCheques.value.length - 1
+  // Validate before adding
+  if (validateChequeNo(newIndex)) {
+    updateCheques()
+  } else {
+    alert('Duplicate cheque number detected')
+    localCheques.value.splice(newIndex, 1) // Remove invalid entry
+    updateCheques()
+  }
 }
-
 
 
 // function removeCheque(index) {

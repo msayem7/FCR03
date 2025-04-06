@@ -109,7 +109,7 @@ const loadReport = async () => {
       max_amount: filters.value.max_amount
     }
     const { data } = await axios.get('/v1/chq/reports/ci-vs-cheque', { params })
-    console.log('Report Data:', data)
+    //console.log('Report Data:', data)
     reportData.value = data
   } catch (error) {
     console.error('Error loading report:', error)

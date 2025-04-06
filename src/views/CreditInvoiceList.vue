@@ -157,13 +157,6 @@ watch([
   fetchCustomers()
 }, { immediate: true })
 
-// watch([
-//   () => store.selectedBranch,
-//   () => store.refreshTrigger
-// ], ()=>{
-//   fetchInvoices,
-//   fetchCustomers
-// }, { immediate: true })
 </script>
 
 <style scoped>

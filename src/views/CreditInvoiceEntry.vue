@@ -287,7 +287,7 @@ const fetchInvoice = async () => {
       customer: data.customer, // Direct assignment of alias_id
       version: data.version
     }
-    console.log('Form value: ',form.value)
+    // console.log('Form value: ',form.value)
 
     if (data.invoice_image) {
       existingImageUrl.value = data.invoice_image

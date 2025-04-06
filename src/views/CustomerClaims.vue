@@ -28,8 +28,13 @@
                 v-model="claim.claim_no"
                 type="text"
                 class="form-control border-0"
+                :class="{ 'is-invalid': claimErrors[index] }"
                 placeholder="Claim No"
+                @input="handleClaimInput(index)"
               >
+              <div v-if="claimErrors[index]" class="invalid-feedback">
+                Claim number must be unique
+              </div>
             </td>
             <td>
               <input
@@ -84,9 +89,28 @@ const localClaims = ref(props.claims.map(c => ({
   formatted_amount: formatNumber(c.claim_amount)
 })))
 
+const claimErrors = ref([])
+
+// Add this function
+function handleClaimInput(index) {
+  validateClaimNo(index);
+  updateClaims(); // Propagate changes immediately
+}
+
+function validateClaimNo(index) {
+  const currentClaimNo = localClaims.value[index].claim_no
+  const duplicates = localClaims.value.filter((clm, idx) => 
+    clm.claim_no === currentClaimNo && idx !== index
+  )
+  
+  claimErrors.value[index] = duplicates.length > 0
+  return !claimErrors.value[index]
+}
+
 function updateClaims() {
   emit('update:claims', localClaims.value.map(c => ({
     ...c,
+    claim_name: c.claim_name,
     claim_amount: parseNumber(c.formatted_amount)
   })))
 }
@@ -102,6 +126,27 @@ function updateClaims() {
 //   updateClaims()
 // }
 
+function addClaim() {
+  const newClaim = {
+    claim_no: '',
+    claim_name: 'New Claim',  // Default name
+    details: '',
+    formatted_amount: formatNumber(0),
+    claim_amount: 0,
+    claim: null  // Assuming this links to master claim
+  }
+
+  // Validate before adding
+  const lastIndex = localClaims.value.length
+  if (validateClaimNo(lastIndex)) {
+    localClaims.value.push(newClaim)
+    updateClaims()
+  } else {
+    alert('Duplicate claim number detected')
+    // Remove if validation fails
+    localClaims.value.splice(lastIndex, 1)
+  }
+}
 
 function formatClaimAmount(index) {
   const parsed = parseNumber(localClaims.value[index].formatted_amount)
