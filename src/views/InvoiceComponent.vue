@@ -429,7 +429,7 @@ const validateAllocation = (invoice) => {
   }
    
   //Need to check the application of this function
-  if (remainingDue(invoice) === netSale(invoice)) {
+  if (remainingDue(invoice) === netSale(invoice) && remainingDue(invoice)>0) {
     errors.value[`inv-${invoice.invoice_no}`] = 
       `No allocations made for invoice ${invoice.invoice_no}`
   }

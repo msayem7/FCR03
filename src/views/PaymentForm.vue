@@ -74,6 +74,7 @@ import CustomerClaims from '@/views/CustomerClaims.vue'
 import CustomerDropdown from '@/components/CustomerDropdown.vue'
 import InvoiceComponent from '@/views/InvoiceComponent.vue'
 import axios from '@/plugins/axios'
+import { watch } from 'vue'
 
 const invoiceComponentRef = ref(null)
 const invoiceComponentKey = ref(0)
@@ -96,6 +97,30 @@ const invoiceError = ref(null)
 
 const errors = ref({})
 
+watch(
+  () => branchStore.selectedBranch,
+  async (newBranch) => {
+    console.log('Branch changed:', newBranch)
+    try {
+      await resetClaim() // Now properly awaits the async function
+      resetForm()
+    } catch (error) {
+      console.error('Branch change handling error:', error)
+    }
+  },
+  { immediate: true }
+)
+// watch(
+//   () => branchStore.selectedBranch,
+//   (newBranch) => {
+//     // Reset all form state
+
+//     resetClaim()
+//     resetForm()
+//     // Add other resets
+//   },
+//   { immediate: true } // Reset on initial load too
+// )
 
 watchEffect(async () => {  
   // console.log(`The watch2 formData.value.customer?.alias_id is: ${formData.value.customer?.alias_id}`)
@@ -308,29 +333,50 @@ async function fetchInvoices() {
   }
 }
 
-
-// Updated mounted hook
-onMounted(async () => {
+async function resetClaim() {
   try {     
-    const response = await axios.get('/v1/chq/master-claims/', {params:{
-      branch:branchStore.selectedBranch
-    }})
+    console.log('resetClaim > start:')
+    const response = await axios.get('/v1/chq/master-claims/', {
+      params: {
+        branch: branchStore.selectedBranch // Will use current branch
+      }
+    })
+    console.log('resetClaim > response.data:', response.data)
     masterClaims.value = response.data.map(item => ({
-      // master_id: item.alias_id,
-      claim:item.alias_id,
+      claim: item.alias_id,
       claim_name: item.claim_name,
       claim_no: '',
       claim_amount: 0,
       details: ''
     }))
-  
+    resetForm() // Reset form after claims update
+  } catch (error) {
+    invoiceError.value = 'Failed to reset claims'
+    console.error('Claim reset error:', error)
+  }
+}
+
+// Updated mounted hook
+onMounted(async () => {
+  try {
+    // const response = await axios.get('/v1/chq/master-claims/', {params:{
+    //   branch:branchStore.selectedBranch
+    // }})
+    // masterClaims.value = response.data.map(item => ({
+    //   // master_id: item.alias_id,
+    //   claim:item.alias_id,
+    //   claim_name: item.claim_name,
+    //   claim_no: '',
+    //   claim_amount: 0,
+    //   details: ''
+    // }))
+    await resetClaim()
     resetForm() // Initialize claims with master data
   } catch (error) {
     console.error('Error loading master claims:', error)
     notificationStore.showError('Failed to load claim templates')
   }
 })
-
 
 </script>
 

@@ -129,7 +129,7 @@ function updateClaims() {
 function addClaim() {
   const newClaim = {
     claim_no: '',
-    claim_name: 'New Claim',  // Default name
+    claim_name: '',  // Default name
     details: '',
     formatted_amount: formatNumber(0),
     claim_amount: 0,

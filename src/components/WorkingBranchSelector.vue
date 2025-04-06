@@ -42,7 +42,6 @@ onMounted(() => {
 });
 </script>
 
-
 <style>
 .flashing-bg {
   animation: flash 1.5s infinite;
