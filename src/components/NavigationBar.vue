@@ -113,11 +113,10 @@ const menuItems = ref([
     icon: 'bi-speedometer2' 
   },
   {
-    name: 'Sales',
+    name: 'Configurations',
     icon: 'bi-currency-dollar',
     submenu: [ 
       {name: 'Offices', link: '/branches',  icon: 'bi-house-door'},
-      { name: 'Customers', link: '/customers', icon: 'bi-people' },
       { name: 'Claims', link: '/claims', icon: 'bi bi-card-list'},
       // { name: 'Deductions', link: '/deductions', icon: 'bi bi-receipt-cutoff' },
      
@@ -125,9 +124,10 @@ const menuItems = ref([
   }
   ,
   {
-    name: 'Transactions',
+    name: 'Operations',
     icon: 'bi-wallet2',
     submenu: [      
+    { name: 'Customers', link: '/customers', icon: 'bi-people' },
     { name: 'Credit Invoices', link: '/credit-invoices', icon: 'bi-cash-coin' }, ///claim/categories/
     { name: 'Customer Payment', link: '/cheques/customer/payments', icon: 'bi-list-ul' },
     // { name: 'Cheques', link: '/cheques', icon: 'bi-list-ul' },
