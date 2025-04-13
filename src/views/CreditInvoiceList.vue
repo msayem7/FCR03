@@ -111,21 +111,26 @@ const fetchInvoices = async () => {
       throw new Error('Select a working office first')
     }
 
+    // console.log("Filters value", filters.value)
+    
     const params = {
       branch: store.selectedBranch,
       transaction_date_after: filters.value.dateFrom,
       transaction_date_before: filters.value.dateTo,
-      customer: filters.value.customer, 
+      customer: filters.value.customer?.alias_id || filters.value.customer,
       _t: new Date().getTime()
     }
+    
+    console.log('Invoice Filter params', params)
 
     const { data } = await axios.get('/v1/chq/credit-invoices/', { params })
     invoices.value = data    
   } catch (error) {
-    console.error('Fetch error:', error) // Add this debug log
+    console.error('Fetch error:', error)
     alert('Credit Invoice: ' + error.message)
   }
 }
+
 
 const fetchCustomers = async () => {
   try{

@@ -1,46 +1,3 @@
-<!-- <template>
-  <div class="customer-selector-container">
-    <div class="dropdown-section">
-      <label class="dropdown-label">Parent Organization</label>
-      <select
-        v-model="selectedParent"
-        class="form-select"
-        :class="{ 'is-invalid': error }"
-        @change="onParentChange"
-      >
-        <option value="">Select Parent Organization</option>
-        <option 
-          v-for="parent in parentOrganizations" 
-          :key="parent.alias_id"
-          :value="parent"  
-        >
-          {{ parent.name }} 
-        </option>
-      </select>
-    </div>
-
-    <div class="dropdown-section">
-      <label class="dropdown-label">Customer</label>
-      <select
-        v-model="selectedCustomer"
-        class="form-select"
-        :class="{ 'is-invalid': error }"
-        :disabled="!selectedParent"
-        @change="onCustomerChange"
-      >
-        <option value="">Select Customer</option>
-        <option 
-          v-for="customer in filteredCustomers" 
-          :key="customer.alias_id"
-          :value="customer"  
-        >
-          {{ customer.name }} 
-        </option>
-      </select>
-    </div>
-  </div>
-</template> -->
-
 <template>
   <div class="customer-selector-container">
     <!-- Parent Company Selection -->
@@ -208,9 +165,9 @@ const onCustomerChange = () => {
 
 onMounted(loadCustomers)
 watch(() => props.modelValue, (newVal) => {
-  console.log("watch triggered - newVal:", newVal)
-  console.log("current customers:", customers.value)
-  console.log("current parentOrganizations:", parentOrganizations.value)
+  // console.log("watch triggered - newVal:", newVal)
+  // console.log("current customers:", customers.value)
+  // console.log("current parentOrganizations:", parentOrganizations.value)
 
   if (!newVal) {
     resetSelections()
@@ -223,25 +180,26 @@ watch(() => props.modelValue, (newVal) => {
       
       if (typeof newVal === 'string') {
         customerObj = customers.value.find(c => c.alias_id === newVal)
-        console.log("found customer by string:", customerObj)
+        // console.log("found customer by string:", customerObj)
       } else if (newVal && typeof newVal === 'object') {
         customerObj = newVal
-        console.log("received customer object:", customerObj)
+        // console.log("received customer object:", customerObj)
       }
       
       if (customerObj) {
         const parent = parentOrganizations.value.find(
           p => p.alias_id === customerObj.parent
         )
-        console.log("found parent:", parent)
+        // console.log("found parent:", parent)
         
         if (parent) {
           selectedParent.value = parent
           selectedCustomer.value = customerObj
-          console.log("selections set successfully")
-        } else {
-          console.log("parent not found for customer")
-        }
+          // console.log("selections set successfully")
+        } 
+        // else {
+        //   console.log("parent not found for customer")
+        // }
       }
     }
   }
@@ -251,7 +209,7 @@ watch(() => props.modelValue, (newVal) => {
   
   // If data not loaded yet, watch for changes
   if (!customers.value.length || !parentOrganizations.value.length) {
-    console.log("data not loaded yet - setting up watchers")
+    // console.log("data not loaded yet - setting up watchers")
     const unwatchCustomers = watch(customers, () => {
       if (customers.value.length) {
         trySetSelections()

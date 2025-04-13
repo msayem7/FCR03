@@ -295,7 +295,7 @@ const fetchInvoice = async () => {
     
     // Find the customer object from the customers list
     const customerObj = customers.value.find(c => c.alias_id === data.customer)
-    console.log('Customer Object: ', customerObj)
+    // console.log('Customer Object: ', customerObj)
     form.value = {
       ...data,
       customer: customerObj, //customers.value.find(c => c.alias_id === data.customer), // Find the customer object
