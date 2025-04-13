@@ -100,7 +100,7 @@ const errors = ref({})
 watch(
   () => branchStore.selectedBranch,
   async (newBranch) => {
-    console.log('Branch changed:', newBranch)
+    // console.log('Branch changed:', newBranch)
     try {
       await resetClaim() // Now properly awaits the async function
       resetForm()
@@ -163,7 +163,7 @@ function updateCheques(updatedCheques) {
 }
 
 function updateClaims(updatedClaims) {
-  console.log('updatedClaims > Started > formData.value.claims :', updatedClaims)
+  // console.log('updatedClaims > Started > formData.value.claims :', updatedClaims)
   formData.value.claims = updatedClaims.map(claim => ({   
     claim_no: claim.claim_no,
     claim: claim.claim,
@@ -335,13 +335,13 @@ async function fetchInvoices() {
 
 async function resetClaim() {
   try {     
-    console.log('resetClaim > start:')
+    // console.log('resetClaim > start:')
     const response = await axios.get('/v1/chq/master-claims/', {
       params: {
         branch: branchStore.selectedBranch // Will use current branch
       }
     })
-    console.log('resetClaim > response.data:', response.data)
+    // console.log('resetClaim > response.data:', response.data)
     masterClaims.value = response.data.map(item => ({
       claim: item.alias_id,
       claim_name: item.claim_name,

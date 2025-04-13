@@ -17,11 +17,18 @@
             <input type="date" v-model="filters.dateTo" class="form-control">
           </div>
           <div class="col-md-4">
+            <CustomerDropdown
+              v-model="filters.customer"
+              :show-labels="false"
+              layout="stacked"
+            />
+          </div>
+          <!-- <div class="col-md-4">
             <select v-model="filters.customer" class="form-select">
               <option value="">All Customers</option>
               <option v-for="c in customers" :value="c.alias_id" :key="c.alias_Id">{{ c.name }}</option>
             </select>
-          </div>
+          </div> -->
           <div class="col-md-2">
             <button @click="fetchInvoices" class="btn btn-primary w-100">Filter</button>
           </div>
@@ -62,24 +69,31 @@
                 Edit
               </router-link>
             </td>
-          </tr>
+          </tr> 
           <!-- Add empty state message -->
           <tr v-if="invoices.length === 0">
             <td colspan="6" class="text-center">No invoices found</td>
           </tr>
+          <!-- Summary Row -->
+          <tr v-if="invoices.length > 0" class="bg-light fw-bold">
+            <td colspan="5">Total ({{ invoices.length }} invoices)</td>
+            <td>{{ formatNumber(totalSales) }}</td>
+            <td>{{ formatNumber(totalSalesReturn) }}</td>
+            <td>{{ formatNumber(totalNetSales) }}</td>
+            <td></td>
+          </tr>
         </tbody>
-      </table>
-    
+      </table>    
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useBranchStore } from '@/stores/branchStore'
 import axios from '@/plugins/axios'
-import { formatDate, formatNumber } from '@/utils/ezFormatter'
-
+import { formatDate, formatNumber, parseNumber } from '@/utils/ezFormatter'
+import CustomerDropdown from '@/components/CustomerDropdown.vue'
 
 const store = useBranchStore()
 const invoices = ref([])
@@ -138,6 +152,18 @@ const calculatePaymentDate = (invoice) => {
    return date.toISOString().split('T')[0]
 }
 
+const totalSales = computed(() => {
+  return invoices.value.reduce((sum, invoice) => sum + (parseNumber(invoice.sales_amount)|| 0), 0)
+})
+
+const totalSalesReturn = computed(() => {
+  return invoices.value.reduce((sum, invoice) => sum + (parseNumber(invoice.sales_return) || 0), 0)
+})
+
+const totalNetSales = computed(() => {
+  return (parseNumber(totalSales.value) - parseNumber(totalSalesReturn.value))
+})
+
 onMounted(() => {
   fetchCustomers()
   fetchInvoices()
@@ -177,5 +203,9 @@ tbody tr {
 
 tbody tr:hover {
   background-color: rgba(0,0,0,.075);
+}
+
+.bg-light {
+  background-color: #f8f9fa !important;
 }
 </style>

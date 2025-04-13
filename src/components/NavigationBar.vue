@@ -115,37 +115,33 @@ const menuItems = ref([
   {
     name: 'Sales',
     icon: 'bi-currency-dollar',
-    submenu: [
+    submenu: [ 
+      {name: 'Offices', link: '/branches',  icon: 'bi-house-door'},
       { name: 'Customers', link: '/customers', icon: 'bi-people' },
-      { name: 'Claim Categories', link: '/claim/categories/', icon: 'bi bi-card-list'},
       { name: 'Claims', link: '/claims', icon: 'bi bi-card-list'},
-      { name: 'Credit Invoices', link: '/credit-invoices', icon: 'bi-cash-coin' }, ///claim/categories/
       // { name: 'Deductions', link: '/deductions', icon: 'bi bi-receipt-cutoff' },
-      {
-        name: 'Offices',
-        link: '/branches',
-        icon: 'bi-building'
-      },
+     
     ]
   }
   ,
   {
-    name: 'Cheques',
+    name: 'Transactions',
     icon: 'bi-wallet2',
     submenu: [      
+    { name: 'Credit Invoices', link: '/credit-invoices', icon: 'bi-cash-coin' }, ///claim/categories/
     { name: 'Customer Payment', link: '/cheques/customer/payments', icon: 'bi-list-ul' },
-    { name: 'Cheques', link: '/cheques', icon: 'bi-list-ul' },
-      { name: 'Pending Cheque', link: '/cheques/pending', icon: 'bi-clock-history' },
-      { name: 'Deposited Cheque', link: '/cheques/deposited', icon: 'bi-check-circle' }
+    // { name: 'Cheques', link: '/cheques', icon: 'bi-list-ul' },
+    // { name: 'Pending Cheque', link: '/cheques/pending', icon: 'bi-clock-history' },
+    // { name: 'Deposited Cheque', link: '/cheques/deposited', icon: 'bi-check-circle' }
     ]
   },
   {
     name: 'Reports',
     icon: 'bi-bar-chart',
     submenu: [
-      { name: 'Invoice Reports', link: '/reports/invoice/cheque', icon: 'bi-graph-up' },
-      { name: 'Sale Detail', link: '/reports/Sales/Detail', icon: 'bi-pie-chart' },
-      { name: 'Customer Due Payements', link: '/due-payements', icon: 'bi-receipt' }
+    { name: 'Sale Detail', link: '/reports/Sales/Detail', icon: 'bi-pie-chart' },
+    { name: 'Payment Detail', link: '/reports/invoice/cheque', icon: 'bi-graph-up' },
+    // { name: 'Customer Due Payements', link: '/due-payements', icon: 'bi-receipt' }
     ]
   }
 ]);

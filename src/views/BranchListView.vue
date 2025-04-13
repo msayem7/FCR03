@@ -1,45 +1,45 @@
 <template>
-    <div class="container mt-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Office Management</h2>
-        <router-link to="/branches/create" class="btn btn-primary">
-          <i class="bi bi-plus-circle me-2"></i>Create New Office
-        </router-link>
-      </div>
-  
-      <div class="card shadow">
-        <div class="card-body">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Parent</th>
-                <th>Last Updated</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="branch in branches"  :key="branch.alias_id">
-                <td>{{ branch.name }}</td>
-                <td>{{ branchTypeMap[branch.branch_type] }}</td>
-                <td>{{ getParentName(branch.parent) }}</td>
-                <td>{{ formatDate(branch.updated_at) }}</td>
-                <td>
-                  <router-link 
-                    :to="`/branches/edit/${branch.alias_id}`" 
-                    class="btn btn-sm btn-outline-secondary me-2"
-                  >
-                    Edit
-                  </router-link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Office Management</h2>
+      <router-link to="/branches/create" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-2"></i>Create New Office
+      </router-link>
+    </div>
+
+    <div class="card shadow">
+      <div class="card-body">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Parent</th>
+              <th>Last Updated</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="branch in branches"  :key="branch.alias_id">
+              <td>{{ branch.name }}</td>
+              <td>{{ branchTypeMap[branch.branch_type] }}</td>
+              <td>{{ getParentName(branch.parent) }}</td>
+              <td>{{ formatDate(branch.updated_at) }}</td>
+              <td>
+                <router-link 
+                  :to="`/branches/edit/${branch.alias_id}`" 
+                  class="btn btn-sm btn-outline-secondary me-2"
+                >
+                  Edit
+                </router-link>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-  </template>
+  </div>
+</template>
   
   <script setup>
   import { ref, onMounted } from 'vue'
