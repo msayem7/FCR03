@@ -6,22 +6,22 @@
       </div>
       <div class="card-body">
         <div class="row mb-3 g-3">            
-            <div class="col-md-3">
-              <label class="form-label">From Sales Date</label>
-              <input type="date" class="form-control" v-model="filters.date_from">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">To Sales Date</label>
-              <input type="date" class="form-control" v-model="filters.date_to">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">TotalDue Amount Range</label>
-              <div class="input-group">
-                <input type="number" class="form-control" placeholder="Min" v-model="filters.min_amount">
-                <input type="number" class="form-control" placeholder="Max" v-model="filters.max_amount">
-              </div>
+          <div class="col-md-3">
+            <label class="form-label">From Sales Date</label>
+            <input type="date" class="form-control" v-model="filters.date_from">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">To Sales Date</label>
+            <input type="date" class="form-control" v-model="filters.date_to">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">TotalDue Amount Range</label>
+            <div class="input-group">
+              <input type="number" class="form-control" placeholder="Min" v-model="filters.min_amount">
+              <input type="number" class="form-control" placeholder="Max" v-model="filters.max_amount">
             </div>
           </div>
+        </div>
         <div class="filters">
           <div class="d-flex gap-2 mb-3">
             <button class="btn btn-primary" @click="loadReport">

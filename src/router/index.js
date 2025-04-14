@@ -1,16 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../components/UserLogin.vue';
-import ChequeListView from '../views/ChequeListView.vue';
+import ChequeListView from '../views/archive_vue/ChequeListView.vue';
 import { useAuthStore } from '@/stores/authStore';
 import DashboardView from '../views/DashboardView';
 import CustomersView from '../views/CustomersView';
 import DuePayementsView from '../views/DuePayementsView';
 import PendingListView from '../views/PendingListView';
-import ChequeDepositedView from '../views/ChequeDepositedView';
+// import ChequeDepositedView from '../views/ChequeDepositedView';
 // import InvoiceChequeRep from '@/reports/InvoiceChequeRep.vue';
 import SalesDetailReport from '../views/SalesDetailReport';
 import ChargesListView from '@/views/ChargesListView.vue';
-import DiductionsView from '@/views/DiductionsView.vue';
+import DiductionsView from '@/views/archive_vue/DiductionsView.vue';
 
 const routes = [
     // { path: '/', redirect: '/login' },
@@ -21,7 +21,7 @@ const routes = [
     { path: '/customer/claims', name: 'customer-claims', component: DiductionsView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/cheques', name: 'cheques', component: ChequeListView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/cheques/pending', name: 'pending', component: PendingListView, meta: {requiresAuth: true, hideNav: false} },  //Check not yet deposited
-    { path: '/cheques/deposited', name: 'deposited', component: ChequeDepositedView, meta: {requiresAuth: true, hideNav: false} },
+    // { path: '/cheques/deposited', name: 'deposited', component: ChequeDepositedView, meta: {requiresAuth: true, hideNav: false} },
     //{ path: '/reports/invoice/cheque', name: 'invoice-report', component: InvoiceChequeRep, meta: {requiresAuth: true, hideNav: false} },
     { path: '/reports/sale/detail', name: 'sale-detail', component: SalesDetailReport, meta: {requiresAuth: true, hideNav: false} },
     { path: '/due-payements', name: 'due-payements', component: DuePayementsView, meta: {requiresAuth: true, hideNav: false} },
@@ -62,29 +62,35 @@ const routes = [
       component: () => import('@/views/CreditInvoiceList.vue'),
       meta: { requiresAuth: true, hideNav: false }
     },
-    {
-      path: '/cheques',
-      name: 'cheques',
-      component: () => import('@/views/ChequeListView.vue'),
-      meta: { requiresAuth: true, hideNav: false }
-    },
-    {
-      path: '/cheques/create',
-      name: 'cheque-create',
-      component: () => import('@/views/ChequeEntryView.vue'),
-      meta: { requiresAuth: true, hideNav: false }
-    },
-    {
-      path: '/cheques/edit/:aliasId',
-      name: 'cheque-edit',
-      component: () => import('@/views/ChequeEntryView.vue'),
-      meta: { requiresAuth: true, hideNav: false }
-    },    
+    // {
+    //   path: '/cheques',
+    //   name: 'cheques',
+    //   component: () => import('@/views/ChequeListView.vue'),
+    //   meta: { requiresAuth: true, hideNav: false }
+    // },
+    // {
+    //   path: '/cheques/create',
+    //   name: 'cheque-create',
+    //   component: () => import('@/views/ChequeEntryView.vue'),
+    //   meta: { requiresAuth: true, hideNav: false }
+    // },
+    // {
+    //   path: '/cheques/edit/:aliasId',
+    //   name: 'cheque-edit',
+    //   component: () => import('@/views/ChequeEntryView.vue'),
+    //   meta: { requiresAuth: true, hideNav: false }
+    // },    
     {
       path: '/cheques/customer/payments',
       name: 'customer-payments',
       component: () => import('@/views/PaymentForm.vue'),
       meta: { requiresAuth: true, hideNav: false }
+    },
+    {
+      path: '/reports/customer-statement',
+      name: 'CustomerStatementReport',
+      component: () => import('@/views/reports/CustomerStatementReport.vue'),
+      meta: { requiresAuth: true }
     }
 ];
 
