@@ -47,32 +47,34 @@
         <!-- sales Amount -->
         <div class="col-md-6 form-floating">
           <input 
-            v-model="form.sales_amount" 
-            type="number" 
+            v-model="formattedSalesAmount" 
+            type="text" 
             class="form-control" 
             id="sales_amount"
             placeholder=" "
             required
+            @blur="updateSalesAmount"
           >
           <label for="sales_amount">Sales Amount</label>
-        </div>
-        
+        </div>               
+       
         <div class="col-md-6 form-floating">
           <input 
-            v-model="form.sales_return" 
-            type="number" 
+            v-model="formattedSalesReturn" 
+            type="text" 
             class="form-control" 
             id="sales_return"
             placeholder=" "
             required
+            @blur="updateSalesReturn"
           >
           <label for="sales_return">Sales Return</label>
         </div>
 
         <div class="col-md-6 form-floating">
           <input 
-            :value="net_sales" 
-            type="Number" 
+            :value="formattedNetSales" 
+            type="text" 
             class="form-control" 
             id="net_sales"
             placeholder=" "
@@ -175,6 +177,8 @@ import CustomerDropdown from '@/components/CustomerDropdown.vue'
 // import CustomerClaims from '@/views/CustomerClaims.vue'
 import { Number } from 'core-js'
 
+import { formatNumber, parseNumber } from '@/utils/ezFormatter'
+
 const store = useBranchStore()
 const route = useRoute()
 const router = useRouter()
@@ -191,7 +195,6 @@ const existingImageUrl = ref(null)
 const editing = ref(false)
 const invoiceId = ref(null)
 const customers = ref([])
-// const customerClaimsRef = ref(null)
 
 
 // Form data
@@ -205,11 +208,31 @@ const form = ref({
   version: 1
 })
 
+// const customerClaimsRef = ref(null)
+const formattedSalesAmount = ref('0.00')
+const formattedSalesReturn = ref('0.00')
+const formattedNetSales = computed(() => {
+  return formatNumber(net_sales.value)
+})
 
 // Update the graceDays computed property to handle the object:
 const graceDays = computed(() => {
   return form.value.customer?.grace_days || 0
 })
+const updateSalesAmount = () => {
+  const num = parseNumber(formattedSalesAmount.value)
+  form.value.sales_amount = num
+  formattedSalesAmount.value = formatNumber(num)
+}
+
+const updateSalesReturn = () => {
+  const num = parseNumber(formattedSalesReturn.value)
+  form.value.sales_return = num
+  formattedSalesReturn.value = formatNumber(num)
+}
+
+
+
 // Computed properties
 // const graceDays = computed(() => {
 //   const customer = customers.value.find(c => c.alias_id === form.value.customer)
@@ -224,15 +247,22 @@ const paymentDate = computed(() => {
 })
 
 
+// Update the net_sales computed property
 const net_sales = computed(() => {
-  // Convert the input to floating-point numbers.
-  const sales = parseFloat(form.value.sales_amount) || 0;
-  const sales_return = parseFloat(form.value.sales_return) || 0;
+  const sales = parseFloat(form.value.sales_amount) || 0
+  const sales_return = parseFloat(form.value.sales_return) || 0
+  return sales - sales_return
+})
 
-  // Calculate net sales. Optionally, fix it to two decimal places.
-  const netSales = sales - sales_return;
-  return parseFloat(netSales.toFixed(2)); // returns a number with two decimals
-});
+// const net_sales = computed(() => {
+//   // Convert the input to floating-point numbers.
+//   const sales = parseFloat(form.value.sales_amount) || 0;
+//   const sales_return = parseFloat(form.value.sales_return) || 0;
+
+//   // Calculate net sales. Optionally, fix it to two decimal places.
+//   const netSales = sales - sales_return;
+//   return parseFloat(netSales.toFixed(2)); // returns a number with two decimals
+// });
 
 // File handling
 const handleFile = (e) => {
@@ -490,7 +520,14 @@ watch(() => store.selectedBranch, (newBranch, oldBranch) => {
   }
 }, { immediate: true })
 
+// this watcher to handle initial values
+watch(() => form.value.sales_amount, (newVal) => {
+  formattedSalesAmount.value = formatNumber(newVal)
+}, { immediate: true })
 
+watch(() => form.value.sales_return, (newVal) => {
+  formattedSalesReturn.value = formatNumber(newVal)
+}, { immediate: true })
 // Initialization
 onMounted(async () => {
   // First load customers

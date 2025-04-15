@@ -92,8 +92,8 @@ export function parseNumber(formattedValue) {
   return parseFloat(numericString) || 0;
 }
 
-export function formatNumber(value, decimals = 0) {
-  // Ensure numeric value
+export function formatNumber(value, decimals = 0) { //decimals = process.env.VUE_APP_DIGITS_AFTER_DECIMAL is not working here. need to investigate why
+    // Ensure numeric value
   const number = typeof value === 'number' ? value : parseFloat(value) || 0;
   // console.log("typeof value :", typeof value, "number :", number)
   return number.toLocaleString( process.env.VUE_APP_DISPLAY_SYSTEM,{
