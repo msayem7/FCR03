@@ -6,14 +6,9 @@
       </div>
       
       <div class="card-body">
-        <!-- Filter Section -->
+        <!-- Filter Section - Removed branch selector -->
         <div class="row mb-4">
-          <div class="col-md-3">
-            <label class="form-label">Branch</label>
-            <WorkingBranchSelector v-model="selectedBranch" />
-          </div>
-          
-          <div class="col-md-6">
+          <div class="col-md-8">
             <label class="form-label">Customer</label>
             <CustomerDropdown 
               v-model="selectedCustomer"
@@ -144,7 +139,6 @@ import { ref, computed, watch } from 'vue'
 import axios from '@/plugins/axios'
 import { formatDate, formatNumber } from '@/utils/ezFormatter'
 import CustomerDropdown from '@/components/CustomerDropdown.vue'
-import WorkingBranchSelector from '@/components/WorkingBranchSelector.vue'
 import { useBranchStore } from '@/stores/branchStore'
 import { useNotificationStore } from '@/stores/notificationStore'
 import { jsPDF } from 'jspdf'
@@ -157,7 +151,7 @@ const branchStore = useBranchStore()
 const notificationStore = useNotificationStore()
 
 // Refs
-const selectedBranch = ref(null)
+
 const selectedCustomer = ref(null)
 const dateFrom = ref(new Date().toISOString().split('T')[0].replace(/-/g, '/'))
 const dateTo = ref(new Date().toISOString().split('T')[0].replace(/-/g, '/'))
@@ -170,7 +164,7 @@ const closingBalance = ref(0)
 
 // Computed
 const canGenerate = computed(() => {
-  return selectedBranch.value && selectedCustomer.value && dateFrom.value && dateTo.value
+  return branchStore.selectedBranch && selectedCustomer.value && dateFrom.value && dateTo.value
 })
 
 // Methods
@@ -183,7 +177,7 @@ const loadStatement = async () => {
     
     const response = await axios.get('/v1/chq/customer-statement/', {
       params: {
-        branch: selectedBranch.value,
+        branch: branchStore.selectedBranch, // Using branch from store
         customer: selectedCustomer.value.alias_id,
         date_from: dateFrom.value,
         date_to: dateTo.value
@@ -322,7 +316,7 @@ const exportToExcel = () => {
 
 // Watchers
 watch(() => branchStore.selectedBranch, (newVal) => {
-  selectedBranch.value = newVal
+  branchStore.selectedBranch = newVal
 }, { immediate: true })
 </script>
 
