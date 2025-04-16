@@ -9,10 +9,11 @@
             <th style="width: 15%">Number</th>
             <th style="width: 50%">Details</th>
             <th style="width: 15%">Amount</th>
+            <!-- <th style="width: 5%" class="text-center">X</th> -->
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(claim, index) in localClaims" :key="index">
+          <tr v-for="(claim, index) in localClaims" :key="index">            
             <td>
               <input
                 v-model="claim.claim_name"
@@ -51,17 +52,21 @@
                 class="form-control border-0 text-end"
                 placeholder="Amount"
               >
-            </td>
+            </td>            
+          </tr>
+          <!-- Total row -->
+          <tr class="table-active">
+            <td colspan="3" class="fw-bold">Total</td>
+            <td class="text-end fw-bold">{{ formatNumber(totalAmount) }}</td>
           </tr>
         </tbody>
-      </table>     
+      </table>
     </div>
   </div>
 </template>
 
-
 <script setup>
-import { ref, watchEffect } from 'vue'
+import { ref, watchEffect, computed } from 'vue'
 import { formatNumber, parseNumber } from '@/utils/ezFormatter'
 // eslint-disable-next-line
 const props = defineProps(['claims'])
@@ -74,6 +79,13 @@ const localClaims = ref(props.claims.map(c => ({
 })))
 
 const claimErrors = ref([])
+
+// Computed property for total amount
+const totalAmount = computed(() => {
+  return localClaims.value.reduce((sum, claim) => {
+    return sum + (parseNumber(claim.formatted_amount) || 0)
+  }, 0)
+})
 
 // Add this function
 function handleClaimInput(index) {
@@ -165,5 +177,10 @@ watchEffect(() => {
 .form-control:disabled {
   background: #f8f9fa;
   cursor: not-allowed;
+}
+
+/* Style for total row */
+.table-active {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 </style>
