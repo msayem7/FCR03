@@ -5,26 +5,39 @@
       <table class="table table-bordered m-0">
         <thead>
           <tr>
-            <th style="width: 15%">Cheque No</th>
-            <th style="width: 20%">Date</th>
-            <th style="width: 45%">Details</th>
+            <th style="width: 15%">Instrument</th>
+            <th style="width: 15%">Receipt No</th>
+            <th style="width: 15%">Date</th>
+            <th style="width: 35%">Details</th>
             <th style="width: 15%">Amount</th>
             <th style="width: 5%" class="text-center">X</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(cheque, index) in cheques" :key="index">
+          <tr v-for="(cheque, index) in cheques" :key="index">            
+            <td>
+              <select
+                v-model="cheque.instrument_type"
+                class="form-control border-0"
+              >
+                <option :value="1">Cash</option>
+                <option :value="2">Cheque</option>
+                <option :value="3">Demand Draft</option>
+                <option :value="4">EFT</option>
+                <option :value="5">RTGS</option>
+              </select>
+            </td>
             <td>
               <input
                 type="text"
                 v-model="cheque.cheque_no"
                 class="form-control border-0"
                 :class="{ 'is-invalid': chequeErrors[index] }"
-                placeholder="Cheque No"
+                placeholder="Receopt No"
                 @input="validateChequeNo(index)"
               >
               <div v-if="chequeErrors[index]" class="invalid-feedback">
-                Cheque number must be unique
+                Receipt number must be unique
               </div>
             </td>
             <td>
@@ -52,20 +65,11 @@
                 placeholder="Amount"
               >
             </td>
-            <!-- <td>
-              <input
-                type="text"
-                v-model="cheque.cheque_amount"
-                class="form-control border-0 text-end"
-                @input="formatChequeAmount(index)"
-                placeholder="Amount"
-              >
-            </td> -->
             <td class="text-center align-middle">
               <button 
                 @click="removeCheque(index)"
                 class="btn btn-danger btn-sm py-0 px-2"
-                title="Remove Cheque"
+                title="Remove Receipt"
                 style="min-width: 28px;"
               >
                 ×
@@ -76,7 +80,7 @@
       </table>
       <div class="p-2">
         <button @click="addCheque" class="btn btn-sm btn-secondary">
-          Add Cheque
+          Add
         </button>
       </div>
     </div>
@@ -84,9 +88,8 @@
 </template>
 
 <script setup>
-import { ref, watchEffect  } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { formatDate, parseDate, formatNumber, parseNumber } from '@/utils/ezFormatter'
-
 
 // Add error state
 const chequeErrors = ref([])
@@ -97,20 +100,19 @@ const props = defineProps(['cheques'])
 const emit = defineEmits(['update:cheques'])
 const localCheques = ref(props.cheques.map(c => ({
   ...c,
-  formatted_amount: formatNumber(c.cheque_amount)
+  formatted_amount: formatNumber(c.cheque_amount),
+  instrument_type: c.instrument_type || 2 // Default to Cheque (2)
 })))
-
-
 
 function updateCheques() {
   emit('update:cheques', localCheques.value.map(c => ({
     cheque_no: c.cheque_no,
+    instrument_type: c.instrument_type,
     cheque_date: c.cheque_date,
     cheque_detail: c.cheque_detail,
     cheque_amount: parseNumber(c.formatted_amount)
   })))
 }
-
 
 function validateChequeNo(index) {
   const currentChequeNo = localCheques.value[index].cheque_no
@@ -122,21 +124,10 @@ function validateChequeNo(index) {
   return !chequeErrors.value[index]
 }
 
-
-// function addCheque() {
-//   localCheques.value.push({
-//     cheque_no: '',
-//     cheque_date: new Date().toISOString().split('T')[0],
-//     cheque_detail: '',
-//     formatted_amount: formatNumber(0),
-//     cheque_amount: 0
-//   })
-//   updateCheques()
-// }
-
 function addCheque() {
   const newCheque = {
     cheque_no: '',
+    instrument_type: 2, // Default to Cheque
     cheque_date: new Date().toISOString().split('T')[0],
     cheque_detail: '',
     formatted_amount: formatNumber(0),
@@ -156,46 +147,17 @@ function addCheque() {
   }
 }
 
-
-// function removeCheque(index) {
-//   const newCheques = props.cheques.filter((_, i) => i !== index)
-//   emit('update:cheques', newCheques)
-// }
-
 function removeCheque(index) {
   localCheques.value.splice(index, 1)
   updateCheques()
 }
 
-// function formatChequeDate(index) {
-//   const newCheques = [...props.cheques]
-//   newCheques[index].cheque_date = parseDate(newCheques[index].cheque_date)
-//     .toISOString()
-//     .split('T')[0]
-//   emit('update:cheques', newCheques)
-// }
-
-// function formatChequeAmount(index) {
-//   const newCheques = [...props.cheques]
-//   const rawValue = newCheques[index].cheque_amount
-//   const parsed = parseNumber(rawValue)
-
-//   newCheques[index].cheque_amount = isNaN(parsed) ? 0 : parsed
-//   newCheques[index].formatted_amount = formatNumber(parsed)
-//   // formatNumber(
-//   //   parseNumber(newCheques[index].cheque_amount)
-//   // )
-//   emit('update:cheques', newCheques)
-// }
-
-// Handle date changes
 function formatChequeDate(index) {
   const date = parseDate(localCheques.value[index].cheque_date)
   localCheques.value[index].cheque_date = date.toISOString().split('T')[0]
   updateCheques()
 }
 
-// Format amount input
 function formatChequeAmount(index) {
   const parsed = parseNumber(localCheques.value[index].formatted_amount)
   localCheques.value[index].formatted_amount = formatNumber(parsed)
@@ -203,13 +165,11 @@ function formatChequeAmount(index) {
   updateCheques()
 }
 
-
-// Sync with parent changes (one-way)
-
 watchEffect(() => {
   localCheques.value = props.cheques.map(c => ({
     ...c,
-    formatted_amount: formatNumber(c.cheque_amount)
+    formatted_amount: formatNumber(c.cheque_amount),
+    instrument_type: c.instrument_type || 2 // Default to Cheque (2)
   }))
 })
 </script>
@@ -235,5 +195,10 @@ watchEffect(() => {
 .btn-danger {
   line-height: 1.2;
   font-size: 1.1rem;
+}
+
+select.form-control {
+  appearance: auto;
+  -webkit-appearance: auto;
 }
 </style>
