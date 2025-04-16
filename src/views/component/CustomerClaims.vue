@@ -9,11 +9,10 @@
             <th style="width: 15%">Number</th>
             <th style="width: 50%">Details</th>
             <th style="width: 15%">Amount</th>
-            <!-- <th style="width: 5%" class="text-center">X</th> -->
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(claim, index) in localClaims" :key="index">            
+          <tr v-for="(claim, index) in localClaims" :key="index">
             <td>
               <input
                 v-model="claim.claim_name"
@@ -53,24 +52,9 @@
                 placeholder="Amount"
               >
             </td>
-            <!-- <td class="text-center align-middle">
-              <button 
-                @click="removeClaim(index)"
-                class="btn btn-danger btn-sm py-0 px-2"
-                title="Remove Claim"
-                style="min-width: 28px;"
-              >
-                ×
-              </button>
-            </td> -->
           </tr>
         </tbody>
-      </table>
-      <!-- <div class="p-2">
-        <button @click="addClaim" class="btn btn-sm btn-secondary">
-          Add Claim
-        </button>
-      </div> -->
+      </table>     
     </div>
   </div>
 </template>
@@ -115,16 +99,6 @@ function updateClaims() {
   })))
 }
 
-// function addClaim() {
-//   localClaims.value.push({
-//     claim_no: '',
-//     claim_name: 'New Claim',
-//     details: '',
-//     formatted_amount: formatNumber(0),
-//     claim_amount: 0
-//   })
-//   updateClaims()
-// }
 
 function addClaim() {
   const newClaim = {
