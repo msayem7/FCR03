@@ -69,7 +69,7 @@ import { ref, computed, onMounted, watchEffect } from 'vue'
 import { useNotificationStore } from '@/stores/notificationStore'
 import { useBranchStore } from '@/stores/branchStore'
 import { formatDate, ServerDateFormat, formatNumber, parseNumber } from '@/utils/ezFormatter'
-import ReceivedCheques from '@/views/component/ReceivedCheques.vue'
+import ReceivedCheques from '@/views/component/ReceivedCustomerPayments.vue'
 import CustomerClaims from '@/views/component/CustomerClaims.vue'
 import CustomerDropdown from '@/components/CustomerDropdown.vue'
 import InvoiceComponent from '@/views/component/InvoiceComponent.vue'
@@ -193,15 +193,15 @@ async function submitPayment() {
   try {
     // Check for duplicates before submission
    // Modified cheque/claim validation
-   const chequeNos = formData.value.cheques
-      .map(c => c.cheque_no)
+   const receipt_nos = formData.value.cheques
+      .map(c => c.receipt_no)
       .filter(n => n.trim() !== '')
 
     const claimNos = formData.value.claims
       .map(c => c.claim_no)
       .filter(n => n.trim() !== '')  // Add this filter
       
-    if (new Set(chequeNos).size !== chequeNos.length) {
+    if (new Set(receipt_nos).size !== receipt_nos.length) {
       throw new Error('Duplicate cheque numbers exist')
     }
 

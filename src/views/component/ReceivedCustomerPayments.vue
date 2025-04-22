@@ -30,11 +30,11 @@
             <td>
               <input
                 type="text"
-                v-model="cheque.cheque_no"
+                v-model="cheque.receipt_no"
                 class="form-control border-0"
                 :class="{ 'is-invalid': chequeErrors[index] }"
                 placeholder="Receopt No"
-                @input="validateChequeNo(index)"
+                @input="validateReceiptNo(index)"
               >
               <div v-if="chequeErrors[index]" class="invalid-feedback">
                 Receipt number must be unique
@@ -106,7 +106,7 @@ const localCheques = ref(props.cheques.map(c => ({
 
 function updateCheques() {
   emit('update:cheques', localCheques.value.map(c => ({
-    cheque_no: c.cheque_no,
+    receipt_no: c.receipt_no,
     instrument_type: c.instrument_type,
     cheque_date: c.cheque_date,
     cheque_detail: c.cheque_detail,
@@ -114,10 +114,10 @@ function updateCheques() {
   })))
 }
 
-function validateChequeNo(index) {
-  const currentChequeNo = localCheques.value[index].cheque_no
+function validateReceiptNo(index) {
+  const currentReceiptNo = localCheques.value[index].receipt_no
   const duplicates = localCheques.value.filter((chq, idx) => 
-    chq.cheque_no === currentChequeNo && idx !== index
+    chq.receipt_no === currentReceiptNo && idx !== index
   )
   
   chequeErrors.value[index] = duplicates.length > 0
@@ -126,7 +126,7 @@ function validateChequeNo(index) {
 
 function addCheque() {
   const newCheque = {
-    cheque_no: '',
+    receipt_no: '',
     instrument_type: 2, // Default to Cheque
     cheque_date: new Date().toISOString().split('T')[0],
     cheque_detail: '',
@@ -138,7 +138,7 @@ function addCheque() {
   localCheques.value.push(newCheque)
   const newIndex = localCheques.value.length - 1
   // Validate before adding
-  if (validateChequeNo(newIndex)) {
+  if (validateReceiptNo(newIndex)) {
     updateCheques()
   } else {
     alert('Duplicate cheque number detected')

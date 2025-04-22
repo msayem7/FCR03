@@ -32,8 +32,8 @@
             <th>Net Due</th>
             
             <!-- Dynamic Cheque Columns -->
-            <th v-for="cheque in activeCheques" :key="`chq-${cheque.cheque_no}`">
-              CHQ-{{ cheque.cheque_no }}
+            <th v-for="cheque in activeCheques" :key="`chq-${cheque.receipt_no}`">
+              CHQ-{{ cheque.receipt_no }}
             </th>
             
             <!-- Dynamic Claim Columns -->
@@ -70,13 +70,13 @@
             <td class="text-end">{{ formatNumber(invoice.net_due) }}</td>
 
             <!-- Editable Cheque Allocations -->
-            <td v-for="cheque in activeCheques" :key="`chq-${cheque.cheque_no}`">
+            <td v-for="cheque in activeCheques" :key="`chq-${cheque.receipt_no}`">
               <input
                 type="text"
-                v-model="allocations[invoice.alias_id].cheques[cheque.cheque_no]"
+                v-model="allocations[invoice.alias_id].cheques[cheque.receipt_no]"
                 @input="validateAllocation(invoice)"
                 class="form-control text-end"
-                :class="{ 'is-invalid': hasAllocationError(invoice, 'cheque', cheque.cheque_no) }"
+                :class="{ 'is-invalid': hasAllocationError(invoice, 'cheque', cheque.receipt_no) }"
                 :disabled="!selectedInvoices.includes(invoice.alias_id)"
               >
             </td>
@@ -108,10 +108,10 @@
             
             <td 
               v-for="cheque in activeCheques"
-              :key="`chq-selected-total-${cheque.cheque_no}`"
+              :key="`chq-selected-total-${cheque.receipt_no}`"
               class="text-end"
             >
-              {{ formatNumber(selectedTotals.cheques[cheque.cheque_no]) }}
+              {{ formatNumber(selectedTotals.cheques[cheque.receipt_no]) }}
             </td>
             
             <td 
@@ -135,10 +135,10 @@
             
             <td 
               v-for="cheque in activeCheques" 
-              :key="`chq-total-${cheque.cheque_no}`"
+              :key="`chq-total-${cheque.receipt_no}`"
               class="text-end"
             >
-              {{ formatNumber(chequeTotals[cheque.cheque_no]) }}
+              {{ formatNumber(chequeTotals[cheque.receipt_no]) }}
             </td>
             
             <td 
@@ -229,8 +229,8 @@ const selectedTotals = computed(() => {
 
       // Sum cheque allocations
       activeCheques.value.forEach(cheque => {
-        const amount = parseFloat(allocations.value[invoice.alias_id]?.cheques[cheque.cheque_no]) || 0
-        totals.cheques[cheque.cheque_no] = (totals.cheques[cheque.cheque_no] || 0) + amount
+        const amount = parseFloat(allocations.value[invoice.alias_id]?.cheques[cheque.receipt_no]) || 0
+        totals.cheques[cheque.receipt_no] = (totals.cheques[cheque.receipt_no] || 0) + amount
       })
 
     // Sum claim allocations
@@ -249,7 +249,7 @@ const activeInvoices = computed(() =>
   (props.invoices || []).filter(inv => parseNumber(inv.net_due) != 0)
 )
 const activeCheques = computed(() => 
-  props.cheques.filter(c => parseNumber(c.cheque_amount) > 0 && c.cheque_no)
+  props.cheques.filter(c => parseNumber(c.cheque_amount) > 0 && c.receipt_no)
 )
 
 // const activeClaims = computed(() => 
@@ -289,8 +289,8 @@ const totalNetDue = computed(() =>
 const chequeTotals = computed(() => {
   const totals = {}
   activeCheques.value.forEach(chq => {
-    totals[chq.cheque_no] = activeInvoices.value.reduce((sum, inv) => 
-      sum + parseNumber(allocations.value[inv.alias_id]?.cheques[chq.cheque_no] || 0)
+    totals[chq.receipt_no] = activeInvoices.value.reduce((sum, inv) => 
+      sum + parseNumber(allocations.value[inv.alias_id]?.cheques[chq.receipt_no] || 0)
     , 0)
   })
   return totals
@@ -338,7 +338,7 @@ function initializeAllocations() {
       claims: {}
     }
     activeCheques.value.forEach(chq => {
-      allocations.value[inv.alias_id].cheques[chq.cheque_no] = '0'
+      allocations.value[inv.alias_id].cheques[chq.receipt_no] = '0'
     })
     activeClaims.value.forEach(clm => {
       allocations.value[inv.alias_id].claims[clm.claim_no] = '0'
@@ -355,35 +355,35 @@ const validateAllocation = (invoice) => {
   activeCheques.value.forEach(chq => {
      // 2. Cheque total validation
     activeCheques.value.forEach(cheque => {
-      const totalAllocated = chequeTotals.value[cheque.cheque_no] || 0
+      const totalAllocated = chequeTotals.value[cheque.receipt_no] || 0
       const chequeAmount = parseNumber(cheque.cheque_amount)
       
       if (totalAllocated > chequeAmount) {
-        errors.value[`chq-${cheque.cheque_no}`] = 
-          `Cheque ${cheque.cheque_no} over-allocated (Max: ${formatNumber(chequeAmount)})`
+        errors.value[`chq-${cheque.receipt_no}`] = 
+          `Cheque ${cheque.receipt_no} over-allocated (Max: ${formatNumber(chequeAmount)})`
       }
     })
-    // const allocated = parseNumber(allocations.value[invoice.alias_id].cheques[chq.cheque_no] || 0)
+    // const allocated = parseNumber(allocations.value[invoice.alias_id].cheques[chq.receipt_no] || 0)
     // const chequeTotal = parseNumber(chq.cheque_amount)
     // // 1. Invoice-level validation
     // if (allocated > chequeTotal) {
-    //   errors.value[`chq-${chq.cheque_no}`] = 
-    //     `Cheque ${chq.cheque_no} allocation exceeds cheque amount (${formatNumber(chequeTotal)})`
+    //   errors.value[`chq-${chq.receipt_no}`] = 
+    //     `Cheque ${chq.receipt_no} allocation exceeds cheque amount (${formatNumber(chequeTotal)})`
     // }
     
     // // 2. Cheque total validation
-    // const totalAllocated = chequeTotals.value[chq.cheque_no] || 0
+    // const totalAllocated = chequeTotals.value[chq.receipt_no] || 0
     // if (totalAllocated > chequeTotal) {
-    //     errors.value[`chq-${chq.cheque_no}`] = 
-    //       `Cheque ${chq.cheque_no} over-allocated (Max: ${formatNumber(chequeTotal)})`
+    //     errors.value[`chq-${chq.receipt_no}`] = 
+    //       `Cheque ${chq.receipt_no} over-allocated (Max: ${formatNumber(chequeTotal)})`
     // }
     // activeCheques.value.forEach(cheque => {
-    //   //const totalAllocated = chequeTotals.value[cheque.cheque_no] || 0
+    //   //const totalAllocated = chequeTotals.value[cheque.receipt_no] || 0
     //   const chequeAmount = parseNumber(cheque.cheque_amount)
       
     //   if (totalAllocated > chequeAmount) {
-    //     errors.value[`chq-${cheque.cheque_no}`] = 
-    //       `Cheque ${cheque.cheque_no} over-allocated (Max: ${formatNumber(chequeAmount)})`
+    //     errors.value[`chq-${cheque.receipt_no}`] = 
+    //       `Cheque ${cheque.receipt_no} over-allocated (Max: ${formatNumber(chequeAmount)})`
     //   }
     // })
 

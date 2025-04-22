@@ -4,7 +4,7 @@
       <!-- Brand Logo -->
       <router-link to="/" class="navbar-brand">
         <img src="@/assets/logo.png" alt="Logo" class="brand-logo">
-        SalesCheque Manager
+        Sales bill receving management
       </router-link>
 
       <!-- Mobile Toggle -->
