@@ -26,6 +26,15 @@
     </div>
     <div class="row mt-4">
       <div class="col-md-6">
+        <ExistingPayments
+          ref="refreshComponentRef"
+          :key="refreshComponentKey"
+          :payments="existingPayments"
+          :customer="formData.customer"
+          :loading="loadingExistingPayments"
+          @update:selectedPayments="updateExistingPayments"
+        />
+        
         <ReceivedCheques 
           :cheques="formData.cheques"
           @update:cheques="updateCheques"
@@ -41,11 +50,12 @@
     <div class="row mt-4">
       <!-- <div class="col-md-12"> -->
       <InvoiceComponent
-        ref="invoiceComponentRef"
-        :key="invoiceComponentKey"
+        ref="refreshComponentRef"
+        :key="refreshComponentKey"
         :invoices="filteredInvoices"
         :cheques="formData.cheques"
         :claims="formData.claims"
+        :existingPayments="selectedExistingPayments"  
         :loading="loadingInvoices"
         v-model="formData.allocations"
       />
@@ -65,23 +75,28 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watchEffect } from 'vue'
+import { ref, computed, onMounted, watch, watchEffect } from 'vue'
 import { useNotificationStore } from '@/stores/notificationStore'
 import { useBranchStore } from '@/stores/branchStore'
 import { formatDate, ServerDateFormat, formatNumber, parseNumber } from '@/utils/ezFormatter'
+import ExistingPayments from '@/views/component/ExistingPayments.vue'
 import ReceivedCheques from '@/views/component/ReceivedCustomerPayments.vue'
 import CustomerClaims from '@/views/component/CustomerClaims.vue'
 import CustomerDropdown from '@/components/CustomerDropdown.vue'
 import InvoiceComponent from '@/views/component/InvoiceComponent.vue'
 import axios from '@/plugins/axios'
-import { watch } from 'vue'
 
-const invoiceComponentRef = ref(null)
-const invoiceComponentKey = ref(0)
+const refreshComponentRef = ref(null)
+const refreshComponentKey = ref(0)
 
 const notificationStore = useNotificationStore()
 const branchStore = useBranchStore()
 const masterClaims = ref([])
+
+const existingPayments = ref([])
+const loadingExistingPayments = ref(false)
+const selectedExistingPayments = ref([])
+
 
 const formData = ref({
   received_date: formatDate(new Date()),
@@ -110,53 +125,19 @@ watch(
   },
   { immediate: true }
 )
-// watch(
-//   () => branchStore.selectedBranch,
-//   (newBranch) => {
-//     // Reset all form state
 
-//     resetClaim()
-//     resetForm()
-//     // Add other resets
-//   },
-//   { immediate: true } // Reset on initial load too
-// )
-
+// Update your watchEffect to also fetch existing payments
 watchEffect(async () => {  
-  // console.log(`The watch2 formData.value.customer?.alias_id is: ${formData.value.customer?.alias_id}`)
-  // console.log(`The watch2 fbranchStore.selectedBranch?.alias_id is: ${branchStore.selectedBranch}`)
   if (formData.value.customer?.alias_id && branchStore.selectedBranch) {
-    loadingInvoices.value = true
-    try {
-      
-      const response = await axios.get('/v1/chq/credit-invoices/', {
-        params: {
-          branch: branchStore.selectedBranch,
-          customer: formData.value.customer.alias_id
-          // , status: "true"  // Send as lowercase string
-        }
-      })
-      // const response = await axios.get('/v1/chq/credit-invoices/', {
-      //   params: {
-      //     branch: branchStore.selectedBranch,
-      //     customer: formData.value.customer.alias_id,
-      //     status: true
-      //   }
-      // })
-      filteredInvoices.value = response.data
-      //filteredInvoices.value = response.data.results // If paginated
-    } catch (error) {
-      invoiceError.value = 'Failed to load invoices'
-      console.error('Invoice load error:', error)
-    } finally {
-      loadingInvoices.value = false
-    }
+    await fetchInvoices()
+    await fetchExistingPayments()
   } else {
     filteredInvoices.value = []
+    existingPayments.value = []
     loadingInvoices.value = false
+    loadingExistingPayments.value = false
   }
 })
-
 
 function updateCheques(updatedCheques) {
   formData.value.cheques = updatedCheques
@@ -175,6 +156,30 @@ function updateClaims(updatedClaims) {
   console.log ('updatedClaims> End > formData.value.claims:', formData.value.claims)
 }
 
+async function fetchExistingPayments() {
+  if (formData.value.customer?.alias_id && branchStore.selectedBranch) {
+    loadingExistingPayments.value = true
+    try {
+      
+      const response = await axios.get('/v1/chq/unallocated-payments/', {
+        params: {
+          branch: branchStore.selectedBranch,
+          customer: formData.value.customer.alias_id
+        }
+      })
+      existingPayments.value = response.data
+    } catch (error) {
+      console.error('Error loading existing payments:', error)
+    } finally {
+      loadingExistingPayments.value = false
+    }
+  }
+}
+
+// Add this method to handle updates
+function updateExistingPayments(payments) {
+  selectedExistingPayments.value = payments
+}
 
 function resetForm() {
   formData.value.cheques = []
@@ -220,87 +225,82 @@ async function submitPayment() {
       );
     });
     
-    //console.log ('formData.value.allocations', formData.value.allocations)
+    // console.log ('formData.value.allocations', formData.value.allocations)
     const validAllocations = Object.entries(formData.value.allocations)
       .filter(([invoiceId, allocation]) => {
-        const totalAllocated = Object.values(allocation.cheques || {})
-          .concat(Object.values(allocation.claims || {}))
-          .reduce((sum, val) => sum + parseNumber(val || 0), 0)
-        return totalAllocated > 0 // 👈 Only include invoices with allocations
+        const chequeAllocations = Object.values(allocation.cheques || {}).reduce((sum, val) => sum + parseNumber(val || 0), 0)
+        const claimAllocations = Object.values(allocation.claims || {}).reduce((sum, val) => sum + parseNumber(val || 0), 0)
+        const existingPaymentAllocations = Object.values(allocation.existingPayments || {}).reduce((sum, val) => sum + parseNumber(val || 0), 0)
+        
+        return (chequeAllocations + claimAllocations + existingPaymentAllocations) > 0
       })
       .reduce((acc, [invoiceId, allocation]) => {
         acc[invoiceId] = allocation
         return acc
       }, {})
-
-    // const validAllocations = Object.entries(formData.value.allocations)
-    //   .filter(([invoiceId, allocation]) => {
-    //     const totalAllocated = Object.values(allocation.cheques)
-    //       .concat(Object.values(allocation.claims))
-    //       .reduce((sum, val) => sum + parseNumber(val || 0), 0)
-    //     return totalAllocated > 0
-    //   })
-    // const validAllocations = Object.entries(formData.value.allocations)
-    //   .filter(([invoiceId, allocation]) => {
-    //     const invoice = filteredInvoices.value.find(inv => inv.alias_id === invoiceId)
-    //     // Filter out invoices with zero net due
-    //     return invoice.net_due > 0 && invoice.net_due !=invoice.remainingDue
-    //   })
-    //   .reduce((acc, [invoiceId, allocation]) => {
-    //     acc[invoiceId] = allocation
-    //     return acc
-    //   }, {})
-
-    //console.log ("validAllocations: ", validAllocations)
+    
+      
+    // console.log ("validAllocations: ", Object.keys(validAllocations).entries())
     if (Object.keys(validAllocations).length === 0) {
       throw new Error('No valid allocations found')
     }
 
-    // const filteredClaims = formData.value.claims.filter(claim => {
-    //   const amount = parseFloat(claim.amount)
-    //   return claim.claim_no?.trim() && !isNaN(amount) && amount > 0
-    // })
-    
+    // Update payload to use filtered existing payments
     const payload = {
       ...formData.value,
-      received_date: formatDate(formData.value.received_date), //ServerDateFormat(formData.value.received_date),
+      received_date: formatDate(formData.value.received_date),
       branch: branchStore.selectedBranch,
       customer: formData.value.customer.alias_id,
       claims: filteredClaims,
-      allocations: validAllocations  // Use filtered allocations
-    }
-    
+      // existing_payments: filteredExisting.map(p => ({
+      //   receipt_no: p.receipt_no,
+      //   instrument_type: p.instrument_type,
+      //   cheque_amount: p.cheque_amount
+      // })),
+      allocations: validAllocations
+    };
+
+    console.log('Allocations:', JSON.parse(JSON.stringify(formData.value.allocations)))
+    // console.log('Existing Payments:', filteredExisting.value)
+
     const response = await axios.post('/v1/chq/customer-payments/', payload);
   
     notificationStore.showSuccess('Payment recorded successfully');
     //alert('Payment recorded successfully')
+    refreshComponentKey.value++
+    formData.value.allocations = {} // Reset allocations
 
+    formData.value.customer = null
     resetForm()
 
+
     // Reset invoice component state
-    if (invoiceComponentRef.value) {
-      invoiceComponentRef.value.resetState()
+    if (refreshComponentRef.value) {
+      refreshComponentRef.value.resetState()
     } 
 
-    // Force reload invoices
-    invoiceComponentKey.value++
+    // console.log('Reset invoice component state')
 
-    await fetchInvoices()
+    // // Force reload invoices
+    // refreshComponentKey.value++
 
-    // formData.value.allocations = {}; // Reset allocations
-    // selectedInvoices.value = []; // Clear selected invoices
+    // await fetchInvoices()
 
-    // Add cache-buster to force fresh data
-    const timestamp = new Date().getTime()
-    const response1 = await axios.get('/v1/chq/credit-invoices/', {
-      params: {
-        branch: branchStore.selectedBranch,
-        customer: customerAliasId,  // Use stored value
-        _: timestamp
-      }
-    })
-    
-    filteredInvoices.value = JSON.parse(JSON.stringify(response1.data))
+    // console.log('Invoice fetched')
+    // formData.value.allocations = {} // Reset allocations
+    // selectedInvoices.value = [] // Clear selected invoices
+
+    // // Add cache-buster to force fresh data
+    // const timestamp = new Date().getTime()
+    // const response1 = await axios.get('/v1/chq/credit-invoices/', {
+    //   params: {
+    //     branch: branchStore.selectedBranch,
+    //     customer: customerAliasId,  // Use stored value
+    //     _: timestamp
+    //   }
+    // })
+
+    // filteredInvoices.value = JSON.parse(JSON.stringify(response1.data))
     
   } catch (error) {
     notificationStore.showError(error.response?.data?.error || error.message)
@@ -316,14 +316,19 @@ async function fetchInvoices() {
   if (formData.value.customer?.alias_id && branchStore.selectedBranch) {
     loadingInvoices.value = true;
     try {
+      const timestamp = new Date().getTime()
       const response = await axios.get('/v1/chq/credit-invoices/', {
         params: {
           branch: branchStore.selectedBranch,
           customer: formData.value.customer.alias_id,
-          status: "true"  // 👈 Ensure active invoices are fetched
+          status: "true",  // 👈 Ensure active invoices are fetched
+          _: timestamp
         }
       })
+      
       // filteredInvoices.value = response.data;
+      // filteredInvoices.value={}
+
       filteredInvoices.value = JSON.parse(JSON.stringify(response.data)); 
     } catch (error) {
       invoiceError.value = 'Failed to reload invoices';
@@ -358,18 +363,7 @@ async function resetClaim() {
 
 // Updated mounted hook
 onMounted(async () => {
-  try {
-    // const response = await axios.get('/v1/chq/master-claims/', {params:{
-    //   branch:branchStore.selectedBranch
-    // }})
-    // masterClaims.value = response.data.map(item => ({
-    //   // master_id: item.alias_id,
-    //   claim:item.alias_id,
-    //   claim_name: item.claim_name,
-    //   claim_no: '',
-    //   claim_amount: 0,
-    //   details: ''
-    // }))
+  try {    
     await resetClaim()
     resetForm() // Initialize claims with master data
   } catch (error) {

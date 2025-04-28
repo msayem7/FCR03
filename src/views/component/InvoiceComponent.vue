@@ -35,7 +35,14 @@
             <th v-for="cheque in activeCheques" :key="`chq-${cheque.receipt_no}`">
               CHQ-{{ cheque.receipt_no }}
             </th>
-            
+
+            <th v-for="payment in selectedExistingPayments" :key="`existing-${payment.receipt_no}`">
+              EX-{{ payment.receipt_no }}
+            </th>
+            <!-- <th v-for="payment in activeExistingPayments" :key="`existing-${payment.receipt_no}`">
+              EX-{{ payment.receipt_no }}
+            </th> -->
+
             <!-- Dynamic Claim Columns -->
             <th v-for="claim in activeClaims" :key="`clm-${claim.claim_no}`">
               CLM-{{ claim.claim_no }}
@@ -79,7 +86,28 @@
                 :class="{ 'is-invalid': hasAllocationError(invoice, 'cheque', cheque.receipt_no) }"
                 :disabled="!selectedInvoices.includes(invoice.alias_id)"
               >
+            </td>                         
+            <!-- Add these input fields in the invoice rows -->
+            <td v-for="payment in selectedExistingPayments" :key="`existing-${payment.receipt_no}`">
+              <input
+                type="text"
+                v-model="allocations[invoice.alias_id].existingPayments[payment.receipt_no]"
+                @input="validateAllocation(invoice)"
+                class="form-control text-end"
+                :class="{ 'is-invalid': hasAllocationError(invoice, 'existing', payment.receipt_no) }"
+                :disabled="!selectedInvoices.includes(invoice.alias_id)"
+              >
             </td>
+            <!-- <td v-for="payment in activeExistingPayments" :key="`existing-${payment.receipt_no}`">
+              <input
+                type="text"
+                v-model="allocations[invoice.alias_id].existingPayments[payment.receipt_no]"
+                @input="validateAllocation(invoice)"
+                class="form-control text-end"
+                :class="{ 'is-invalid': hasAllocationError(invoice, 'existing', payment.receipt_no) }"
+                :disabled="!selectedInvoices.includes(invoice.alias_id)"
+              >
+            </td> -->
 
             <td v-for="claim in activeClaims" :key="`clm-${claim.claim_no}`">
               <input
@@ -106,12 +134,19 @@
             <td class="text-end">{{ formatNumber(selectedTotals.allocated) }}</td>
             <td class="text-end">{{ formatNumber(selectedTotals.netDue) }}</td>
             
-            <td 
+            <td
               v-for="cheque in activeCheques"
               :key="`chq-selected-total-${cheque.receipt_no}`"
               class="text-end"
             >
               {{ formatNumber(selectedTotals.cheques[cheque.receipt_no]) }}
+            </td>
+            <td 
+              v-for="payment in selectedExistingPayments"
+              :key="`existing-selected-total-${payment.receipt_no}`"
+              class="text-end"
+            >
+              {{ formatNumber(selectedTotals.existingPayments[payment.receipt_no] || 0) }}
             </td>
             
             <td 
@@ -140,7 +175,14 @@
             >
               {{ formatNumber(chequeTotals[cheque.receipt_no]) }}
             </td>
-            
+            <td 
+              v-for="payment in selectedExistingPayments" 
+              :key="`existing-total-${payment.receipt_no}`"
+              class="text-end"
+            >
+              {{ formatNumber(existingPaymentTotals[payment.receipt_no] || 0) }}
+            </td>
+
             <td 
               v-for="claim in activeClaims" 
               :key="`clm-total-${claim.claim_no}`"
@@ -173,8 +215,18 @@ const props = defineProps({
   invoices: Array,
   cheques: Array,
   claims: Array,
+  existingPayments: {
+    type: Array,
+    default: () => []
+  },
   loading: Boolean
 })
+// const props = defineProps({
+//   invoices: Array,
+//   cheques: Array,
+//   claims: Array,
+//   loading: Boolean
+// })
 
 // eslint-disable-next-line no-undef
 const emit = defineEmits(['update:modelValue'])
@@ -187,6 +239,26 @@ const selectAll = ref(false)
 const allocations = ref({})
 const errors = ref({})
 
+const selectedExistingPayments = computed(() => props.existingPayments || [])
+
+const existingPaymentTotals = computed(() => {
+  const totals = {}
+  selectedExistingPayments.value.forEach(payment => {
+    totals[payment.receipt_no] = activeInvoices.value.reduce((sum, inv) => 
+      sum + parseNumber(allocations.value[inv.alias_id]?.existingPayments[payment.receipt_no] || 0)
+    , 0)
+  })
+  return totals
+})
+
+// const existingPaymentTotals = computed(() => {
+//   const totals = {}
+//   selectedExistingPayments.value.forEach(payment => {
+//     totals[payment.receipt_no] = activeInvoices.value.reduce((sum, inv) => 
+//       sum + parseNumber(allocations.value[inv.alias_id]?.existingPayments[payment.receipt_no] || 0)
+//   )}, 0)
+//   return totals
+// })
 
 function resetState() {
   selectedInvoices.value = []
@@ -199,48 +271,48 @@ defineExpose({
   resetState
 })
 
-// Computed properties
-// const activeInvoices = computed(() => 
-//   props.invoices.filter(inv => inv.status)
-// )
-// Computed properties
-// Add a default array if undefined
+
 const selectedTotals = computed(() => {
   const totals = {
-      sales: 0,
-      returns: 0,
-      netSales: 0,
-      allocated: 0,  // New
-      netDue: 0,    // New
-      remaining: 0,
-      cheques: {},
-      claims: {}
+    sales: 0,
+    returns: 0,
+    netSales: 0,
+    allocated: 0,
+    netDue: 0,
+    remaining: 0,
+    cheques: {},
+    claims: {},
+    existingPayments: {}
   }
 
   activeInvoices.value
     .filter(invoice => selectedInvoices.value.includes(invoice.alias_id))
     .forEach(invoice => {
-      totals.sales += invoice.sales_amount
-      totals.returns += invoice.sales_return
+      totals.sales += parseNumber(invoice.sales_amount)
+      totals.returns += parseNumber(invoice.sales_return)
       totals.netSales += netSale(invoice)
-      totals.allocated += parseNumber(invoice.allocated)  // Sum allocated
-      totals.netDue += parseNumber(invoice.net_due)       // Sum net due
+      totals.allocated += parseNumber(invoice.allocated)
+      totals.netDue += parseNumber(invoice.net_due)
       totals.remaining += remainingDue(invoice)
-
+      console.log('Total Sales: ', totals.sales, 'TR: ', totals.returns, 'Net Sales: ', totals.netSales)
       // Sum cheque allocations
       activeCheques.value.forEach(cheque => {
-        const amount = parseFloat(allocations.value[invoice.alias_id]?.cheques[cheque.receipt_no]) || 0
+        const amount = parseFloat(allocations.value[invoice.alias_id]?.cheques[cheque.receipt_no] || 0)
         totals.cheques[cheque.receipt_no] = (totals.cheques[cheque.receipt_no] || 0) + amount
       })
 
-    // Sum claim allocations
+      // Sum claim allocations
       activeClaims.value.forEach(claim => {
-        const amount = parseFloat(allocations.value[invoice.alias_id]?.claims[claim.claim_no]) || 0
+        const amount = parseFloat(allocations.value[invoice.alias_id]?.claims[claim.claim_no] || 0)
         totals.claims[claim.claim_no] = (totals.claims[claim.claim_no] || 0) + amount
       })
-      
-      
-  })
+
+      // Sum existing payment allocations
+      selectedExistingPayments.value.forEach(payment => {
+        const amount = parseFloat(allocations.value[invoice.alias_id]?.existingPayments[payment.receipt_no] || 0)
+        totals.existingPayments[payment.receipt_no] = (totals.existingPayments[payment.receipt_no] || 0) + amount
+      })
+    })
 
   return totals
 })
@@ -317,25 +389,20 @@ const netSale = (invoice) =>
 const remainingDue = (invoice) => {
   const currentAllocations = Object.values(allocations.value[invoice.alias_id]?.cheques || {})
     .concat(Object.values(allocations.value[invoice.alias_id]?.claims || {}))
+    .concat(Object.values(allocations.value[invoice.alias_id]?.existingPayments || {}))
     .reduce((sum, val) => sum + parseNumber(val), 0)
   
   return invoice.net_due - currentAllocations
 }
-// const remainingDue = (invoice) => {
-//   const allocated = Object.values(allocations.value[invoice.alias_id]?.cheques || {})
-//     .concat(Object.values(allocations.value[invoice.alias_id]?.claims || {}))
-//     .reduce((sum, val) => sum + parseNumber(val), 0)
-    
-//   return netSale(invoice) - allocated
-// }
 
-// Modify initialization to handle empty state
+
 function initializeAllocations() {
   allocations.value = {}
   activeInvoices.value.forEach(inv => {
     allocations.value[inv.alias_id] = {
       cheques: {},
-      claims: {}
+      claims: {},
+      existingPayments: {}
     }
     activeCheques.value.forEach(chq => {
       allocations.value[inv.alias_id].cheques[chq.receipt_no] = '0'
@@ -343,8 +410,16 @@ function initializeAllocations() {
     activeClaims.value.forEach(clm => {
       allocations.value[inv.alias_id].claims[clm.claim_no] = '0'
     })
+    selectedExistingPayments.value.forEach(payment => {
+      allocations.value[inv.alias_id].existingPayments[payment.receipt_no] = '0'
+    })
   })
 }
+
+
+const activeExistingPayments = computed(() => 
+  props.existingPayments.filter(p => parseNumber(p.allocation) > 0)
+)
 
 // Validation
 const validateAllocation = (invoice) => {
@@ -363,29 +438,6 @@ const validateAllocation = (invoice) => {
           `Cheque ${cheque.receipt_no} over-allocated (Max: ${formatNumber(chequeAmount)})`
       }
     })
-    // const allocated = parseNumber(allocations.value[invoice.alias_id].cheques[chq.receipt_no] || 0)
-    // const chequeTotal = parseNumber(chq.cheque_amount)
-    // // 1. Invoice-level validation
-    // if (allocated > chequeTotal) {
-    //   errors.value[`chq-${chq.receipt_no}`] = 
-    //     `Cheque ${chq.receipt_no} allocation exceeds cheque amount (${formatNumber(chequeTotal)})`
-    // }
-    
-    // // 2. Cheque total validation
-    // const totalAllocated = chequeTotals.value[chq.receipt_no] || 0
-    // if (totalAllocated > chequeTotal) {
-    //     errors.value[`chq-${chq.receipt_no}`] = 
-    //       `Cheque ${chq.receipt_no} over-allocated (Max: ${formatNumber(chequeTotal)})`
-    // }
-    // activeCheques.value.forEach(cheque => {
-    //   //const totalAllocated = chequeTotals.value[cheque.receipt_no] || 0
-    //   const chequeAmount = parseNumber(cheque.cheque_amount)
-      
-    //   if (totalAllocated > chequeAmount) {
-    //     errors.value[`chq-${cheque.receipt_no}`] = 
-    //       `Cheque ${cheque.receipt_no} over-allocated (Max: ${formatNumber(chequeAmount)})`
-    //   }
-    // })
 
     // New validation for net due
     if (invoice.net_due <= 0) {
@@ -411,16 +463,7 @@ const validateAllocation = (invoice) => {
         `Claim ${claim.claim_no} over-allocated (Max: ${formatNumber(claimAmount)})`
     }
   })
-  // Validate claim allocations
-  // activeClaims.value.forEach(clm => {
-  //   const allocated = parseNumber(allocations.value[invoice.alias_id].claims[clm.claim_no] || 0)
-  //   const claimTotal = parseNumber(clm.claim_amount)
-    
-  //   if (allocated > claimTotal) {
-  //     errors.value[`clm-${clm.claim_no}`] = 
-  //       `Claim ${clm.claim_no} allocation exceeds claim amount (${formatNumber(claimTotal)})`
-  //   }
-  // })
+ 
 
   // Validate remaining due
   if (remainingDue(invoice) < 0) {
@@ -433,6 +476,19 @@ const validateAllocation = (invoice) => {
     errors.value[`inv-${invoice.invoice_no}`] = 
       `No allocations made for invoice ${invoice.invoice_no}`
   }
+
+  activeExistingPayments.value.forEach(payment => {
+    const totalAllocated = activeInvoices.value.reduce((sum, inv) => 
+      sum + parseNumber(allocations.value[inv.alias_id]?.existingPayments[payment.receipt_no] || 0), 0)
+    
+    const paymentAmount = parseNumber(payment.allocation)
+    
+    if (totalAllocated > paymentAmount) {
+      errors.value[`existing-${payment.receipt_no}`] = 
+        `Existing payment ${payment.receipt_no} over-allocated (Max: ${formatNumber(paymentAmount)})`
+    }
+  })
+    
 }
 
 function toggleAllSelection() {
@@ -450,21 +506,18 @@ const hasAllocationError = (invoice, type, identifier) => {
   ] || !!errors.value[`inv-${invoice.invoice_no}`]
 }
 
-// const hasAllocationError = (invoice, type, identifier) => {
-//   if (type === 'cheque') {
-//     return !!errors.value[`chq-${identifier}`]
-//   }
-//   return !!errors.value[`clm-${identifier}`]
-// }
+
 
 // Watchers
+
 watch(() => props.cheques, initializeAllocations, { deep: true })
 //watch(() => props.claims, initializeAllocations, { deep: true })
 watch(() => props.claims, (newClaims) => {
   initializeAllocations()
   validateAllAllocations()
 }, { deep: true })
-watch(() => props.invoices, initializeAllocations)
+watch(() => props.invoices, initializeAllocations, { deep: true }); // Add deep:true
+watch(() => props.existingPayments, initializeAllocations, { deep: true });
 
 watch(selectedInvoices, (newVal) => {
     selectAll.value = newVal.length === activeInvoices.value.length
