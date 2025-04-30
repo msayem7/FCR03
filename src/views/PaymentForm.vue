@@ -26,6 +26,10 @@
     </div>
     <div class="row mt-4">
       <div class="col-md-6">
+        <ReceivedCheques 
+          :cheques="formData.cheques"
+          @update:cheques="updateCheques"
+        />
         <ExistingPayments
           ref="refreshComponentRef"
           :key="refreshComponentKey"
@@ -33,12 +37,7 @@
           :customer="formData.customer"
           :loading="loadingExistingPayments"
           @update:selectedPayments="updateExistingPayments"
-        />
-        
-        <ReceivedCheques 
-          :cheques="formData.cheques"
-          @update:cheques="updateCheques"
-        />
+        />        
       </div>
       <div class="col-md-6">
         <CustomerClaims
@@ -149,6 +148,8 @@ function updateClaims(updatedClaims) {
     claim_no: claim.claim_no,
     claim: claim.claim,
     claim_name: claim.claim_name, 
+    prefix: claim.prefix, 
+    next_number: claim.next_number, 
     claim_amount: parseNumber(claim.claim_amount),
     details: claim.details
   }))
@@ -185,10 +186,14 @@ function resetForm() {
   formData.value.cheques = []
   formData.value.claims = masterClaims.value.map(claim => ({
     ...claim,
-    claim_no: '',
+    prefix:claim.prefix,
+    next_number:claim.next_number,
+    claim_no: `${claim.prefix}${claim.next_number.toString().padStart(6, '0')}`,  // claim.prefix + claim.next_number,
     claim_amount: 0,
     details: ''
   }))
+  console.log('resetForm > formData.value.claims:', formData.value.claims)
+  console.log('resetForm > masterClaims.value:', masterClaims.value)
   formData.value.allocations = {}
   errors.value = {}
 }
@@ -210,9 +215,9 @@ async function submitPayment() {
       throw new Error('Duplicate cheque numbers exist')
     }
 
-    if (new Set(claimNos).size !== claimNos.length) {
-      throw new Error('Duplicate claim numbers exist')
-    }
+    // if (new Set(claimNos).size !== claimNos.length) {
+    //   throw new Error('Duplicate claim numbers exist')
+    // }
     // Store customer ID before reset
     const customerAliasId = formData.value.customer?.alias_id
     const filteredClaims = formData.value.claims.filter(claim => {
@@ -260,17 +265,18 @@ async function submitPayment() {
       allocations: validAllocations
     };
 
-    console.log('Allocations:', JSON.parse(JSON.stringify(formData.value.allocations)))
+    //console.log('Allocations:', JSON.parse(JSON.stringify(formData.value.allocations)))
     // console.log('Existing Payments:', filteredExisting.value)
 
     const response = await axios.post('/v1/chq/customer-payments/', payload);
   
     notificationStore.showSuccess('Payment recorded successfully');
-    //alert('Payment recorded successfully')
+    alert('Payment recorded successfully')
     refreshComponentKey.value++
     formData.value.allocations = {} // Reset allocations
 
     formData.value.customer = null
+    resetClaim() // Reset claims after successful submission
     resetForm()
 
 
@@ -346,14 +352,16 @@ async function resetClaim() {
         branch: branchStore.selectedBranch // Will use current branch
       }
     })
-    // console.log('resetClaim > response.data:', response.data)
+    console.log('resetClaim > response.data:', response.data)
     masterClaims.value = response.data.map(item => ({
       claim: item.alias_id,
       claim_name: item.claim_name,
-      claim_no: '',
+      prefix: item.prefix,
+      next_number: item.next_number,
       claim_amount: 0,
       details: ''
-    }))
+    }))    
+    console.log('resetClaim > masterClaims.value:', masterClaims.value)
     resetForm() // Reset form after claims update
   } catch (error) {
     invoiceError.value = 'Failed to reset claims'
