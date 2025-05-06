@@ -96,7 +96,7 @@
             <tbody>
               <template v-for="(invoice, invoiceIndex) in reportData" :key="invoice.invoice_no">
                 <tr :class="invoiceIndex % 2 === 0 ? 'even-row' : 'odd-row'">
-                  <td :class="invoiceIndex % 2 === 0 ? 'even-row' : 'odd-row'">{{ invoiceIndex % 2 }}: {{ invoiceIndex % 2 === 0 ? 'even-row' : 'odd-row' }}: {{ invoice.invoice_no }}</td>
+                  <td> {{ invoice.invoice_no }}</td>
                   <td>{{ formatDate(invoice.transaction_date) }}</td>
                   <td class="text-end">{{ formatNumber(invoice.sales_amount) }}</td>
                   <td class="text-end">{{ formatNumber(invoice.sales_return) }}</td>
