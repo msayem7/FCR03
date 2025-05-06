@@ -30,8 +30,8 @@
                   <thead>
                     <tr>
                       <th>Parent Organization</th>
-                      <th class="text-end">Net Sales</th>
-                      <th class="text-end">Received</th>
+                      <!-- <th class="text-end">Net Sales</th>
+                      <th class="text-end">Received</th> -->
                       <th class="text-end">Due Amount</th>
                       <th class="text-end">Customers</th>
                     </tr>
@@ -39,8 +39,8 @@
                   <tbody>
                     <tr v-for="org in parentOrgs" :key="org.parent_id" @click="viewParentDetails(org.parent_id)" class="clickable-row">
                       <td>{{ org.parent_org_name }}</td>
-                      <td class="text-end">{{ formatNumber(org.net_sales) }}</td>
-                      <td class="text-end">{{ formatNumber(org.received) }}</td>
+                      <!-- <td class="text-end">{{ formatNumber(org.net_sales) }}</td>
+                      <td class="text-end">{{ formatNumber(org.received) }}</td> -->
                       <td class="text-end">
                         <span :class="{'text-danger': org.due > 0, 'text-success': org.due <= 0}">
                           {{ formatNumber(org.due) }}

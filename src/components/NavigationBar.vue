@@ -139,8 +139,8 @@ const menuItems = ref([
     name: 'Reports',
     icon: 'bi-bar-chart',
     submenu: [
-    { name: 'Customer Statement', link: '/reports/customer-statement', icon: 'bi-receipt' },
-    // { name: 'Sale Detail', link: '/reports/Sales/Detail', icon: 'bi-pie-chart' },
+    { name: 'Customer Statement', link: '/reports/customer-statement', icon: 'bi-receipt' },   
+    { name: 'Invoicewise Payment Report', link: '/reports/invoice-payments', icon: 'bi-receipt' },
     // { name: 'Payment Detail', link: '/reports/invoice/cheque', icon: 'bi-graph-up' },
     // { name: 'Customer Due Payements', link: '/due-payements', icon: 'bi-receipt' }
     ]

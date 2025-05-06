@@ -24,6 +24,11 @@ const routes = [
     // { path: '/cheques/deposited', name: 'deposited', component: ChequeDepositedView, meta: {requiresAuth: true, hideNav: false} },
     //{ path: '/reports/invoice/cheque', name: 'invoice-report', component: InvoiceChequeRep, meta: {requiresAuth: true, hideNav: false} },
     { path: '/reports/sale/detail', name: 'sale-detail', component: SalesDetailReport, meta: {requiresAuth: true, hideNav: false} },
+    {
+      path: '/reports/invoice-payments', name: 'InvoicePaymentReport',  component: () => import('../views/InvoicePaymentReport.vue'),
+      meta: {requiresAuth: true, hideNav: false} 
+      // meta: { title: 'Invoice Payment Report' }
+    },
     { path: '/due-payements', name: 'due-payements', component: DuePayementsView, meta: {requiresAuth: true, hideNav: false} },
     {
       path: '/branches',
