@@ -130,6 +130,7 @@ const menuItems = ref([
     { name: 'Customers', link: '/customers', icon: 'bi-people' },
     { name: 'Credit Invoices', link: '/credit-invoices', icon: 'bi-cash-coin' }, ///claim/categories/
     { name: 'Customer Payment', link: '/cheques/customer/payments', icon: 'bi-list-ul' },
+    { name: 'Payments', link: '/operations/payment', icon: 'bi-cash-coin' },
     // { name: 'Cheques', link: '/cheques', icon: 'bi-list-ul' },
     // { name: 'Pending Cheque', link: '/cheques/pending', icon: 'bi-clock-history' },
     // { name: 'Deposited Cheque', link: '/cheques/deposited', icon: 'bi-check-circle' }

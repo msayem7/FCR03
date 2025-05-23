@@ -46,85 +46,93 @@
           <hr class="my-4">
 
           <h5 class="mb-3">Payment Instruments</h5>
-          <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-              <thead class="table-light">
-                <tr>
-                  <th style="width: 30%">Instrument*</th>
-                  <th style="width: 20%">Amount*</th>
-                  <th style="width: 35%">Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(detail, index) in formData.payment_details" :key="index">
-                  <td>
-                    <select 
-                      v-model="detail.payment_instrument" 
-                      class="form-select form-select-sm"
-                      @change="updateInstrumentDetails(index)"
-                      :class="{ 'is-invalid': errors[`payment_details.${index}.payment_instrument`] }"
-                      required
-                    >
-                      <option value="">Select Instrument</option>
-                      <option 
-                        v-for="inst in paymentInstruments" 
-                        :value="inst.id" 
-                        :key="inst.id"
-                      >
-                        {{ inst.instrument_name }}
-                      </option>
-                    </select>
-                    <div class="invalid-feedback small">
-                      {{ errors[`payment_details.${index}.payment_instrument`] }}
-                    </div>
-                  </td>
-                  <td>
-                    <input 
-                      type="number" 
-                      v-model="detail.amount" 
-                      step="0.01" 
-                      min="0" 
-                      class="form-control form-control-sm"
-                      :class="{ 'is-invalid': errors[`payment_details.${index}.amount`] }"
-                      required
-                    >
-                    <div class="invalid-feedback small">
-                      {{ errors[`payment_details.${index}.amount`] }}
-                    </div>
-                  </td>
-                  <td>
-                    <input 
-                      type="text" 
-                      v-model="detail.detail" 
-                      class="form-control form-control-sm"
-                      :class="{ 'is-invalid': errors[`payment_details.${index}.detail`] }"
-                    >
-                    <div class="invalid-feedback small">
-                      {{ errors[`payment_details.${index}.detail`] }}
-                    </div>
-                  </td>
-                  <td class="text-center">
-                    <button 
-                      type="button" 
-                      @click="removePaymentDetail(index)" 
-                      class="btn btn-sm btn-outline-danger"
-                      v-if="formData.payment_details.length > 1"
-                      title="Remove instrument"
-                    >
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          
+          <div v-for="(detail, index) in formData.payment_details" :key="index" class="row g-3 mb-3">
+            <div class="col-md-3">
+              <label class="form-label">Instrument*</label>
+              <div v-if="isLoading" class="text-muted">Loading instruments...</div>
+              <select 
+                v-model="detail.payment_instrument" 
+                class="form-select" 
+                @change="updateInstrumentDetails(index)"
+                :class="{ 'is-invalid': errors[`payment_details.${index}.payment_instrument`] }"
+                required
+              >
+                <option value="">Select Instrument</option>
+                <option 
+                  v-for="inst in paymentInstruments" 
+                  :value="inst.id" 
+                  :key="inst.id"
+                >
+                  {{ inst.instrument_name }}
+                </option>
+              </select>
+              <!-- <select 
+                v-else
+                v-model="detail.payment_instrument" 
+                class="form-select" 
+                @change="updateInstrumentDetails(index)"
+                :class="{ 'is-invalid': errors[`payment_details.${index}.payment_instrument`] }"
+                required
+              >
+                <option value="">Select Instrument</option>
+                <option 
+                  v-for="inst in paymentInstruments" 
+                  :value="inst.id" 
+                  :key="inst.id"
+                >
+                  {{ inst.instrument_name }} 
+                </option>
+              </select> -->
+              <div class="invalid-feedback">{{ errors[`payment_details.${index}.payment_instrument`] }}</div>
+              <div v-if="paymentInstruments.length === 0 && !isLoading" class="text-danger">
+                No payment instruments found
+              </div>
+            </div>
+            
+            <div class="col-md-3">
+              <label class="form-label">Amount*</label>
+              <input 
+                type="number" 
+                v-model="detail.amount" 
+                step="0.01" 
+                min="0" 
+                class="form-control" 
+                :class="{ 'is-invalid': errors[`payment_details.${index}.amount`] }"
+                required
+              >
+              <div class="invalid-feedback">{{ errors[`payment_details.${index}.amount`] }}</div>
+            </div>
+            
+            <div class="col-md-4">
+              <label class="form-label">Details</label>
+              <input 
+                type="text" 
+                v-model="detail.detail" 
+                class="form-control"
+                :class="{ 'is-invalid': errors[`payment_details.${index}.detail`] }"
+              >
+              <div class="invalid-feedback">{{ errors[`payment_details.${index}.detail`] }}</div>
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+              <button 
+                type="button" 
+                @click="removePaymentDetail(index)" 
+                class="btn btn-outline-danger"
+                v-if="formData.payment_details.length > 1"
+              >
+                <i class="bi bi-trash"></i>
+              </button>
+            </div>
           </div>
-
+          
           <div class="row mb-4">
             <div class="col">
               <button 
                 type="button" 
                 @click="addPaymentDetail" 
-                class="btn btn-outline-primary btn-sm"
+                class="btn btn-outline-primary"
               >
                 <i class="bi bi-plus"></i> Add Instrument
               </button>
@@ -271,62 +279,56 @@ const updateInstrumentDetails = (index) => {
   // You can add logic here to update details based on instrument selection if needed
 }
 
+
 const submitForm = async () => {
   isSubmitting.value = true
   errors.value = {}
-
-  // Validate all required fields
-  const hasEmptyFields = formData.value.payment_details.some(detail => {
-    return !detail.payment_instrument || !detail.amount
-  })
-
-  if (hasEmptyFields) {
-    errors.value.payment_details = ['Please fill all required fields']
-    isSubmitting.value = false
-    return
-  }
-
+  
   try {
     const payload = {
       received_date: formData.value.received_date,
       customer: formData.value.customer,
       branch: branchStore.selectedBranch,
-      payment_details: formData.value.payment_details.map(detail => {
-        // Ensure payment_instrument is properly included
-        if (!detail.payment_instrument) {
-          throw new Error('Payment instrument is required')
-        }
-        
-        return {
-          payment_instrument: detail.payment_instrument,
-          amount: parseFloat(detail.amount),
-          detail: detail.detail,
-          is_allocated: detail.is_allocated
-        }
+      payment_details: formData.value.payment_details.map(detail => ({
+        payment_instrument: detail.payment_instrument,
+        amount: parseFloat(detail.amount),
+        detail: detail.detail,
+        is_allocated: detail.is_allocated
+      }))
+    }
+
+    const response = isEditMode.value
+      ? await axios.put(`/v1/chq/payments/${route.params.id}/`, payload)
+      : await axios.post('/v1/chq/payments/', payload)
+
+    if (response.data) {
+      // Refresh payment list after successful submission
+      router.push({ 
+        path: '/payments',
+        query: { refresh: true }
       })
     }
-
-    console.log('Final payload:', payload)
-
-    
-    if (isEditMode.value) {
-      await axios.put(`/v1/chq/payments/${route.params.id}/`, payload)
-    } else {
-      await axios.post('/v1/chq/payments/', payload)
-    }
-
-    router.push('/payments')
   } catch (error) {
-    console.error('Submission error:', error)
     if (error.response?.data) {
-      errors.value = error.response.data
+      // Handle validation errors
+      if (error.response.data.payment_details) {
+        error.response.data.payment_details.forEach((err, index) => {
+          Object.keys(err).forEach(field => {
+            errors.value[`payment_details.${index}.${field}`] = err[field]
+          })
+        })
+      } else {
+        errors.value.general = [error.response.data.detail || 'Submission failed']
+      }
     } else {
-      errors.value.general = [error.message || 'Failed to submit payment']
+      errors.value.general = [error.message || 'An unexpected error occurred']
     }
   } finally {
     isSubmitting.value = false
   }
 }
+
+
 onMounted(() => {
   console.log('Component mounted')
   console.log('Selected branch:', branchStore.selectedBranch)

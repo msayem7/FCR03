@@ -11,6 +11,9 @@ import PendingListView from '../views/PendingListView';
 import SalesDetailReport from '../views/SalesDetailReport';
 import ChargesListView from '@/views/ChargesListView.vue';
 import DiductionsView from '@/views/archive_vue/DiductionsView.vue';
+import PaymentListView from '@/views/PaymentListView.vue';
+import PaymentForm from '@/views/PaymentForm.vue';
+
 
 const routes = [
     // { path: '/', redirect: '/login' },
@@ -20,6 +23,9 @@ const routes = [
     { path: '/claims/',   name: 'Master-Claim', component: () => import('@/views/ClaimPage.vue'), meta: { requiresAuth: true, hideNav: false }},
     { path: '/customer/claims', name: 'customer-claims', component: DiductionsView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/cheques', name: 'cheques', component: ChequeListView, meta: {requiresAuth: true, hideNav: false} },
+    { path: '/operations/payment', name: 'parent-customer-payment', component: PaymentListView, meta: {requiresAuth: true, hideNav: false} },
+    { path: '/operations/payments/create', name: 'parent-customer-payment-create', component: PaymentForm, meta: {requiresAuth: true, hideNav: false} },
+
     { path: '/cheques/pending', name: 'pending', component: PendingListView, meta: {requiresAuth: true, hideNav: false} },  //Check not yet deposited
     // { path: '/cheques/deposited', name: 'deposited', component: ChequeDepositedView, meta: {requiresAuth: true, hideNav: false} },
     //{ path: '/reports/invoice/cheque', name: 'invoice-report', component: InvoiceChequeRep, meta: {requiresAuth: true, hideNav: false} },
@@ -84,11 +90,12 @@ const routes = [
     //   name: 'cheque-edit',
     //   component: () => import('@/views/ChequeEntryView.vue'),
     //   meta: { requiresAuth: true, hideNav: false }
-    // },    
+    // },
+
     {
       path: '/cheques/customer/payments',
       name: 'customer-payments',
-      component: () => import('@/views/PaymentForm.vue'),
+      component: () => import('@/views/PaymentFormold.vue'),
       meta: { requiresAuth: true, hideNav: false }
     },
     {
