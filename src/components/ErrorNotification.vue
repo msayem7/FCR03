@@ -12,11 +12,10 @@ import { useNotificationStore } from '@/stores/notificationStore'
 export default {
   setup() {
     const notificationStore = useNotificationStore()
-    console.log(notificationStore.error)
+    console.log('Notification Error : ', notificationStore.error)
     return {
       errorMessage: computed(() => notificationStore.error),
-      clear: () => notificationStore.clearError()
-    
+      clear: () => notificationStore.clearError()    
     }
   }
 }

@@ -51,8 +51,10 @@
               <thead class="table-light">
                 <tr>
                   <th style="width: 30%">Instrument*</th>
+                  <th style="width: 20%">ID Number</th>
                   <th style="width: 20%">Amount*</th>
                   <th style="width: 35%">Details</th>
+                  <th style="width: 15%">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -74,9 +76,18 @@
                         {{ inst.instrument_name }}
                       </option>
                     </select>
+                    
                     <div class="invalid-feedback small">
                       {{ errors[`payment_details.${index}.payment_instrument`] }}
                     </div>
+                  </td>
+                  <td>
+                    <input 
+                      v-model="detail.id_number"
+                      :disabled="isAutoNumber(detail)"
+                      class="form-control form-control-sm"
+                      :class="{ 'is-invalid': errors[`payment_details.${index}.id_number`] }"
+                    >
                   </td>
                   <td>
                     <input 
@@ -154,7 +165,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useBranchStore } from '@/stores/branchStore'
 import axios from '@/plugins/axios'
 import { formatDate } from '@/utils/ezFormatter'
+import { useNotificationStore } from '@/stores/notificationStore'
 
+const notificationStore = useNotificationStore()
 const route = useRoute()
 const router = useRouter()
 const branchStore = useBranchStore()
@@ -170,6 +183,7 @@ const formData = ref({
   payment_details: [
     {
       payment_instrument: '',
+      id_number: '',
       amount: 0,
       detail: '',
       is_allocated: false
@@ -192,6 +206,7 @@ const loadParentCustomers = async () => {
     })
     parentCustomers.value = response.data || []
   } catch (error) {
+    
     console.error('Error loading customers:', error)
     parentCustomers.value = []
   } finally {
@@ -235,6 +250,7 @@ const loadPaymentData = async (id) => {
       customer: payment.customer.alias_id,
       payment_details: payment.payment_details.map(detail => ({
         payment_instrument: detail.payment_instrument.id,
+        id_number: detail.id_number || '',
         amount: detail.amount,
         detail: detail.detail,
         is_allocated: detail.is_allocated
@@ -256,6 +272,7 @@ const loadPaymentData = async (id) => {
 const addPaymentDetail = () => {
   formData.value.payment_details.push({
     payment_instrument: '',
+    id_number: '',
     amount: 0,
     detail: '',
     is_allocated: false
@@ -270,71 +287,71 @@ const updateInstrumentDetails = (index) => {
   
   // You can add logic here to update details based on instrument selection if needed
 }
-
 const submitForm = async () => {
   isSubmitting.value = true
   errors.value = {}
-
-  // Validate all required fields
-  const hasEmptyFields = formData.value.payment_details.some(detail => {
-    return !detail.payment_instrument || !detail.amount
-  })
-
-  if (hasEmptyFields) {
-    errors.value.payment_details = ['Please fill all required fields']
-    isSubmitting.value = false
-    return
-  }
 
   try {
     const payload = {
       received_date: formData.value.received_date,
       customer: formData.value.customer,
       branch: branchStore.selectedBranch,
-      payment_details: formData.value.payment_details.map(detail => {
-        // Ensure payment_instrument is properly included
-        if (!detail.payment_instrument) {
-          throw new Error('Payment instrument is required')
-        }
-        
-        return {
-          payment_instrument: detail.payment_instrument,
-          amount: parseFloat(detail.amount),
-          detail: detail.detail,
-          is_allocated: detail.is_allocated
-        }
-      })
+      payment_details: formData.value.payment_details.map(detail => ({
+        payment_instrument: detail.payment_instrument,
+        id_number: detail.id_number, // Ensure id_number is included
+        amount: parseFloat(detail.amount),
+        detail: detail.detail,
+        is_allocated: detail.is_allocated
+      }))
     }
 
-    console.log('Final payload:', payload)
-
-    
     if (isEditMode.value) {
       await axios.put(`/v1/chq/payments/${route.params.id}/`, payload)
     } else {
       await axios.post('/v1/chq/payments/', payload)
     }
-
-    router.push('/payments')
+    router.push('/operations/payments')
   } catch (error) {
-    console.error('Submission error:', error)
-    if (error.response?.data) {
-      errors.value = error.response.data
+    if (error.response?.data?.error?.details) {
+      const newErrors = {}
+      
+      // Process payment_details errors
+      error.response.data.error.details.payment_details?.forEach((detailErrors, index) => {
+        Object.entries(detailErrors).forEach(([field, messages]) => {
+          if (messages.length > 0) {
+            newErrors[`payment_details.${index}.${field}`] = messages[0]
+          }
+        })
+      })
+
+      errors.value = newErrors
+      notificationStore.showError(errors.value)
     } else {
       errors.value.general = [error.message || 'Failed to submit payment']
+      notificationStore.showError(error.value.general)
     }
   } finally {
     isSubmitting.value = false
   }
 }
+
+
+const isAutoNumber = (detail) => {
+  console.log('Checking if auto number for detail:', detail)
+  const instrument = paymentInstruments.value.find(
+    inst => inst.id === detail.payment_instrument
+  );
+  console.log('Found instrument:', instrument)  
+  console.log('Found instrument?.instrument_type?', instrument?.instrument_type)  
+  console.log('Found instrument?.instrument_type?.auto_number:', instrument?.instrument_type?.auto_number)  
+  return instrument?.instrument_type?.auto_number;
+};
+
 onMounted(() => {
-  console.log('Component mounted')
-  console.log('Selected branch:', branchStore.selectedBranch)
   loadParentCustomers()
   loadPaymentInstruments()
 
   if (isEditMode.value) {
-    console.log('Edit mode, loading payment data')
     loadPaymentData(route.params.id)
   }
 })
