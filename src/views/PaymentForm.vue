@@ -172,6 +172,15 @@ const route = useRoute()
 const router = useRouter()
 const branchStore = useBranchStore()
 
+const instrumentTypeList = ref(
+  [
+    // { id: 0, type_name: '', auto_number: false },
+    // { id: 2, type_name: 'Cash', auto_number: true },
+    // { id: 3, type_name: 'Claim', auto_number: true }
+    // Add more instrument types as needed
+  ]
+)
+
 const isEditMode = computed(() => route.params.id !== undefined)
 const isSubmitting = ref(false)
 const isLoading = ref(false)
@@ -194,6 +203,21 @@ const formData = ref({
 const parentCustomers = ref([])
 const paymentInstruments = ref([])
 
+const loadInstrumentTypes = async() =>{
+  try{
+    const response = await axios.get('v1/chq/PaymentInstrumentType/', {
+      params:{
+        branch: branchStore.selectedBranch,
+      }
+    })
+    console.log('Payment instruments type response after loading:', response.data)
+    instrumentTypeList.value = response.data || [];
+    
+  }
+  catch (error) {
+    notificationStore.showError('Failed to load instrument types. ' + error.message)
+  }
+}
 const loadParentCustomers = async () => {
   try {
     isLoading.value = true
@@ -335,19 +359,30 @@ const submitForm = async () => {
   }
 }
 
-
 const isAutoNumber = (detail) => {
-  console.log('Checking if auto number for detail:', detail)
+
   const instrument = paymentInstruments.value.find(
     inst => inst.id === detail.payment_instrument
   );
-  console.log('Found instrument:', instrument)  
-  console.log('Found instrument?.instrument_type?', instrument?.instrument_type)  
-  console.log('Found instrument?.instrument_type?.auto_number:', instrument?.instrument_type?.auto_number)  
-  return instrument?.instrument_type?.auto_number;
+  if (!instrument) return false;
+  console.log('checking found instrument from isAutoNumber:', instrument)
+  const instrumentType = instrumentTypeList.value.find(
+    instType => instType.id == instrument.instrument_type
+  );
+  return instrumentType?.auto_number || false;
+
+  // console.log('Checking if auto number for detail:', detail)
+  // const instrument = paymentInstruments.value.find(
+  //   inst => inst.id === detail.payment_instrument
+  // );
+  // console.log('Found instrument:', instrument)  
+  // console.log('Found instrument?.instrument_type?', instrument?.instrument_type)  
+  // console.log('Found instrument?.instrument_type?.auto_number:', instrument?.instrument_type?.auto_number)  
+  // return instrument?.instrument_type?.auto_number;
 };
 
 onMounted(() => {
+  loadInstrumentTypes()
   loadParentCustomers()
   loadPaymentInstruments()
 
