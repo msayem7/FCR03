@@ -23,7 +23,7 @@
                 @change="toggleAllSelection"
               >
             </th>
-            <th>Invoice No</th>
+            <th>GRN</th>
             <th>Date</th>
             <th>Sale</th>
             <th>Return</th>
@@ -68,7 +68,7 @@
               >
             </td>
             <!-- Non-editable Invoice Data -->
-            <td>{{ invoice.invoice_no }}</td>
+            <td>{{ invoice.grn }}</td>
             <td>{{ formatDate(invoice.transaction_date) }}</td>
             <td class="text-end">{{ formatNumber(invoice.sales_amount) }}</td>
             <td class="text-end">{{ formatNumber(invoice.sales_return) }}</td>
@@ -441,14 +441,14 @@ const validateAllocation = (invoice) => {
 
     // New validation for net due
     if (invoice.net_due <= 0) {
-      errors.value[`inv-${invoice.invoice_no}`] = 
-        `Invoice ${invoice.invoice_no} is already fully allocated`
+      errors.value[`inv-${invoice.grn}`] = 
+        `Invoice ${invoice.grn} is already fully allocated`
     }
 
     // Update remaining due validation
     if (remainingDue(invoice) < 0) {
-      errors.value[`inv-${invoice.invoice_no}`] = 
-        `Over-allocation detected for invoice ${invoice.invoice_no}`
+      errors.value[`inv-${invoice.grn}`] = 
+        `Over-allocation detected for a invoice ${invoice.grn}`
     }
 
   })
@@ -467,14 +467,14 @@ const validateAllocation = (invoice) => {
 
   // Validate remaining due
   if (remainingDue(invoice) < 0) {
-    errors.value[`inv-${invoice.invoice_no}`] = 
-      `Invoice ${invoice.invoice_no} has over-allocation`
+    errors.value[`inv-${invoice.grn}`] = 
+      `Invoice ${invoice.grn} has over-allocation`
   }
    
   //Need to check the application of this function
   if (remainingDue(invoice) === netSale(invoice) && remainingDue(invoice)>0) {
-    errors.value[`inv-${invoice.invoice_no}`] = 
-      `No allocations made for invoice ${invoice.invoice_no}`
+    errors.value[`inv-${invoice.grn}`] = 
+      `No allocations made for invoice ${invoice.grn}`
   }
 
   activeExistingPayments.value.forEach(payment => {
@@ -503,7 +503,7 @@ function toggleAllSelection() {
 const hasAllocationError = (invoice, type, identifier) => {
   return !!errors.value[
     type === 'cheque' ? `chq-${identifier}` : `clm-${identifier}`
-  ] || !!errors.value[`inv-${invoice.invoice_no}`]
+  ] || !!errors.value[`inv-${invoice.grn}`]
 }
 
 

@@ -40,7 +40,7 @@
       <table class="table table-striped  table-hover">
         <thead>
           <tr>
-            <th>Invoice No</th>
+            <th>GRN</th>
             <th>Customer</th>
             <th>Invoice Date</th>
             <th>Grace</th>
@@ -53,7 +53,7 @@
         </thead>
         <tbody>          
           <tr v-for="(invoice) in invoices" :key="invoice.alias_id">
-            <td>{{ invoice.invoice_no }} </td>
+            <td>{{ invoice.grn }} </td>
             <td>{{ invoice.customer_name }}</td>
             <td>{{ formatDate(invoice.transaction_date) }}</td>
             <td>{{ parseInt(invoice.payment_grace_days) }}</td>
@@ -150,7 +150,7 @@ const fetchCustomers = async () => {
 const calculatePaymentDate = (invoice) => {
   if (!invoice.transaction_date) return ''
   const date = new Date(invoice.transaction_date)
-  //console.log(invoice.invoice_no, date, date.getDate(), parseInt(invoice.payment_grace_days))
+  //console.log(invoice.grn, date, date.getDate(), parseInt(invoice.payment_grace_days))
   
   if (invoice.payment_grace_days) 
     date.setDate(date.getDate() + parseInt(invoice.payment_grace_days))

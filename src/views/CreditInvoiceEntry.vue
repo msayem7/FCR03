@@ -14,7 +14,7 @@
         <!-- Invoice Number -->
         <div class="col-md-6 form-floating">
           <input 
-            v-model="form.invoice_no" 
+            v-model="form.grn" 
             type="text" 
             class="form-control" 
             id="invoiceNo"
@@ -149,7 +149,7 @@
         <!-- <div class="col-12">
           <CustomerClaims
             ref="customerClaimsRef"
-            v-if="form.invoice_no"
+            v-if="form.grn"
             :customerAliasId="form.customer"
             :invoiceAliasId="invoiceId"
           />
@@ -199,7 +199,7 @@ const customers = ref([])
 
 // Form data
 const form = ref({
-  invoice_no: '',
+  grn: '',
   customer: '',
   transaction_date: '',
   sales_amount: 0,

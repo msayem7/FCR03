@@ -46,7 +46,7 @@
             <thead>
               <tr>
                 <th>Shop Name</th>
-                <th>Invoice No</th>
+                <th>GRN</th>
                 <th>Sale Date</th>
                 <th>Grace</th>
                 <th>Sale Amount</th>

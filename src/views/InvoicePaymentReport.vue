@@ -68,7 +68,7 @@
           <table class="table table-bordered table-hover">
             <thead class="table-light">
               <tr style="background-color: #233446;">
-                <th rowspan="2">Invoice No</th>
+                <th rowspan="2">GRN</th>
                 <th rowspan="2">Date</th>
                 <th rowspan="2">Sales Amount</th>
                 <th rowspan="2">Sales Return</th>
@@ -94,9 +94,9 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="(invoice, invoiceIndex) in reportData" :key="invoice.invoice_no">
+              <template v-for="(invoice, invoiceIndex) in reportData" :key="invoice.grn">
                 <tr :class="invoiceIndex % 2 === 0 ? 'even-row' : 'odd-row'">
-                  <td> {{ invoice.invoice_no }}</td>
+                  <td> {{ invoice.grn }}</td>
                   <td>{{ formatDate(invoice.transaction_date) }}</td>
                   <td class="text-end">{{ formatNumber(invoice.sales_amount) }}</td>
                   <td class="text-end">{{ formatNumber(invoice.sales_return) }}</td>
@@ -171,7 +171,7 @@
 
 
                 <!-- Additional rows for multiple cheques -->
-                <!-- <template v-for="(cheque, index) in getAdditionalCheques(invoice)" :key="`cheque-${index}-${invoice.invoice_no}`">
+                <!-- <template v-for="(cheque, index) in getAdditionalCheques(invoice)" :key="`cheque-${index}-${invoice.grn}`">
                   <tr>
                     <td colspan="7"></td>
                     <td>{{ formatDate(cheque.received_date) }}</td>
@@ -184,7 +184,7 @@
                 </template>                 -->
 
                 <!-- Additional rows for multiple claims -->
-                <!-- <template v-for="(claim, index) in getAdditionalClaims(invoice)" :key="`claim-${index}-${invoice.invoice_no}`">
+                <!-- <template v-for="(claim, index) in getAdditionalClaims(invoice)" :key="`claim-${index}-${invoice.grn}`">
                   <tr>
                     <td colspan="12"></td>
                     <td>{{ formatDate(claim.received_date) }}</td>
@@ -318,7 +318,7 @@ const exportToExcel = () => {
   // Prepare data for Excel export
   const excelData = reportData.value.flatMap(invoice => {
     const baseData = {
-      'Invoice No': invoice.invoice_no,
+      'GRN': invoice.grn,
       'Date': formatDate(invoice.transaction_date),
       'Sales Amount': invoice.sales_amount,
       'Sales Return': invoice.sales_return,
@@ -385,7 +385,7 @@ const exportToPDF = () => {
   
   // Table data
   const headers = [
-    'Invoice No',
+    'GRN',
     'Date',
     'Sales',
     'Return',
@@ -405,7 +405,7 @@ const exportToPDF = () => {
   
   const body = reportData.value.flatMap(invoice => {
     const baseData = [
-      invoice.invoice_no,
+      invoice.grn,
       formatDate(invoice.transaction_date),
       formatNumber(invoice.sales_amount),
       formatNumber(invoice.sales_return),

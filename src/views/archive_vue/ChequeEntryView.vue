@@ -118,7 +118,7 @@
                 </thead>
                 <tbody>
                   <tr v-for="invoice in customerInvoices" :key="invoice.alias_id">
-                    <td>{{ invoice.invoice_no }}</td>
+                    <td>{{ invoice.grn }}</td>
                     <td>{{ formatDate(invoice.transaction_date) }}</td>
                     <td>{{ invoice.due_amount }}</td>
                     <td>
