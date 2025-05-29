@@ -17,11 +17,11 @@
             v-model="form.grn" 
             type="text" 
             class="form-control" 
-            id="invoiceNo"
+            id="grn"
             placeholder=" "
             required
           >
-          <label for="invoiceNo">Invoice Number</label>
+          <label for="grn">GRN</label>
         </div>
         <div class="col-md-6">
           <CustomerDropdown
@@ -143,8 +143,7 @@
               style="max-width: 300px; max-height: 200px"
               alt="Current invoice"
             >
-          </div>
-          
+          </div>          
         </div>
         <!-- <div class="col-12">
           <CustomerClaims

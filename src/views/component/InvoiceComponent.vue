@@ -221,12 +221,7 @@ const props = defineProps({
   },
   loading: Boolean
 })
-// const props = defineProps({
-//   invoices: Array,
-//   cheques: Array,
-//   claims: Array,
-//   loading: Boolean
-// })
+
 
 // eslint-disable-next-line no-undef
 const emit = defineEmits(['update:modelValue'])
@@ -534,6 +529,7 @@ function validateAllAllocations() {
 }
 // Initial setup
 onMounted(initializeAllocations)
+
 </script>
 
 <style scoped>
