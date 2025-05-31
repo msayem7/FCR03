@@ -6,7 +6,7 @@
         <h2>Payment Information</h2>
       </div>
       <div class="col-auto">
-        <router-link to="/operations/payments/create" class="btn btn-primary">
+        <router-link to="/operations/payment/create" class="btn btn-primary">
           <i class="bi bi-plus-circle"></i> Add Payment
         </router-link>
       </div>
