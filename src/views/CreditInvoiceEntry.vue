@@ -18,8 +18,7 @@
             type="text" 
             class="form-control" 
             id="grn"
-            placeholder=" "
-            required
+            placeholder="grn"
           >
           <label for="grn">GRN</label>
         </div>

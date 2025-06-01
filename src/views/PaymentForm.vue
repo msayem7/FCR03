@@ -660,7 +660,7 @@ const submitForm = async () => {
       // Add invoice allocations to payload
       invoices: selectedInvoices.value.map(invoice => ({
              //allocated_amount: invoice.net_due,
-        invoice_alias_id: invoice.alias_id,
+        alias_id: invoice.alias_id,
         ...invoice
       })),
 

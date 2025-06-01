@@ -34,14 +34,6 @@
               <label class="form-label">To Date</label>
               <input type="date" v-model="filters.date_to" class="form-control">
             </div>
-            <div class="col-md-2">
-              <label class="form-label">Allocation</label>
-              <select v-model="filters.is_fully_allocated" class="form-select">
-                <option value="all">All</option>
-                <option value="yes">Fully Allocated</option>
-                <option value="no">Not Fully Allocated</option>
-              </select>
-            </div>
             <div class="col-md-2 d-flex align-items-end">
               <button type="submit" class="btn btn-primary me-2">
                 <i class="bi bi-filter"></i> Filter
@@ -72,6 +64,7 @@
                 <th>Cash & Cheques</th>
                 <th>Claims</th>
                 <th>Total</th>
+                <th>Shortage</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -79,9 +72,12 @@
               <tr v-for="payment in payments" :key="payment.alias_id">
                 <td>{{ formatDate(payment.received_date) }}</td>
                 <td>{{ getCustomerName(payment.customer) }}</td>
-                <td>{{ cashAndBankAmount(payment)}}</td>
-                <td>{{ claimAmount(payment) }}</td>
-                <td>{{ calculateTotalAmount(payment) }}</td>
+                <td>{{formatNumber(payment.cash_equivalent_amount)}}</td>
+                <td>{{ formatNumber(payment.claim_amount)}}</td>
+                <td>{{ formatNumber(payment.total_amount)}}</td>
+                <td>{{ formatNumber(payment.shortage_amount)}}</td>
+                <!-- <td>{{ cashAndBankAmount(payment)}}</td> -->
+                <!-- <td>{{ claimAmount(payment) }}</td> -->
                 <td>
                   <button 
                     @click="viewPaymentDetails(payment)" 
@@ -160,11 +156,6 @@
                     <td>{{ detail.instrument_name }}</td>
                     <td>{{ detail.detail }}</td>
                     <td class="text-end">{{ formatNumber(detail.amount) }}</td>
-                    <td>
-                      <span class="badge" :class="detail.is_allocated ? 'bg-success' : 'bg-warning'">
-                        {{ detail.is_allocated ? 'Yes' : 'No' }}
-                      </span>
-                    </td>
                   </tr>
                 </tbody>
               </table>
