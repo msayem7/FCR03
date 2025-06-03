@@ -2,7 +2,7 @@
 <template>
   <div class="dashboard-container">
     <div class="row">
-      <div class="col-md-4">
+      <div class="col-md-5">
         <ParentDueReport :branch-id="branchStore.selectedBranch" />
       </div>
       <!-- Add other dashboard components here -->
