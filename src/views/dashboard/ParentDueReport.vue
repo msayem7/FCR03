@@ -3,13 +3,16 @@
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
         <h5>Customer Due</h5>
-        <div class="d-flex align-items-center header-controls"> <input
+        <div class="d-flex align-items-center header-controls">
+          <input
             type="date"
             v-model="reportDate"
-            class="form-control date-input" @change="loadReport"
+            class="form-control date-input"
+            @change="loadReport"
           >
           <button
-            class="btn btn-primary excel-export-btn ms-2" @click="exportToExcel"
+            class="btn btn-primary excel-export-btn ms-2"
+            @click="exportToExcel"
             :disabled="loading"
           >
             <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
@@ -30,15 +33,38 @@
             <table class="table table-bordered table-hover">
               <thead class="table-light">
                 <tr>
-                  <th>Customer</th>
-                  <th class="text-end">Matured</th>
-                  <th class="text-end">Immature</th>
-                  <th class="text-end">Total</th>
+                  <th @click="sortBy('name')" class="sortable">
+                    Customer
+                    <i v-if="sortColumn === 'name'"
+                       :class="['bi', sortDirection === 'asc' ? 'bi-sort-alpha-down' : 'bi-sort-alpha-up']">
+                    </i>
+                    <i v-else class="bi bi-sort-alpha-down-alt sort-icon-placeholder"></i>
+                  </th>
+                  <th @click="sortBy('matured_due')" class="text-end sortable">
+                    Matured
+                    <i v-if="sortColumn === 'matured_due'"
+                       :class="['bi', sortDirection === 'asc' ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up']">
+                    </i>
+                    <i v-else class="bi bi-sort-numeric-down-alt sort-icon-placeholder"></i>
+                  </th>
+                  <th @click="sortBy('immature_due')" class="text-end sortable">
+                    Immature
+                    <i v-if="sortColumn === 'immature_due'"
+                       :class="['bi', sortDirection === 'asc' ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up']">
+                    </i>
+                    <i v-else class="bi bi-sort-numeric-down-alt sort-icon-placeholder"></i>
+                  </th>
+                  <th @click="sortBy('total_due')" class="text-end sortable">
+                    Total
+                    <i v-if="sortColumn === 'total_due'"
+                       :class="['bi', sortDirection === 'asc' ? 'bi-sort-numeric-down' : 'bi-sort-numeric-up']">
+                    </i>
+                    <i v-else class="bi bi-sort-numeric-down-alt sort-icon-placeholder"></i>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <template v-for="parent in filteredParents" :key="parent.alias_id">
-                  <tr
+                <template v-for="parent in sortedAndFilteredParents" :key="parent.alias_id"> <tr
                     class="parent-row"
                     :class="{ 'cursor-pointer': parent.children.length > 0 }"
                     @click="toggleParent(parent.alias_id)"
@@ -142,6 +168,10 @@ const reportData = ref({
 })
 const expandedParents = ref([])
 
+// --- Sorting State ---
+const sortColumn = ref('name') // Default sort column
+const sortDirection = ref('asc') // Default sort direction
+
 // Computed property to get current branch name
 const currentBranchName = computed(() => {
   if (!branchStore.selectedBranch) return 'All Branches'
@@ -154,11 +184,35 @@ const filteredParents = computed(() => {
   return reportData.value.data.filter(parent => {
     // Show parent if it has any due amount
     if (parent.total_due > 0) return true
-    
+
     // Or if any of its children have due amounts
     return parent.children.some(child => child.total_due > 0)
   })
 })
+
+// --- New Computed Property for Sorted and Filtered Parents ---
+const sortedAndFilteredParents = computed(() => {
+  const parents = [...filteredParents.value]; // Create a shallow copy to avoid mutating original array
+  if (!sortColumn.value) {
+    return parents; // No sorting if no column is selected
+  }
+
+  return parents.sort((a, b) => {
+    let valA = a[sortColumn.value];
+    let valB = b[sortColumn.value];
+
+    // Handle string comparison (case-insensitive for names)
+    if (typeof valA === 'string' && typeof valB === 'string') {
+      valA = valA.toLowerCase();
+      valB = valB.toLowerCase();
+    }
+
+    if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1;
+    if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1;
+    return 0; // Values are equal
+  });
+});
+
 
 const toggleParent = (parentId) => {
   const index = expandedParents.value.indexOf(parentId)
@@ -169,6 +223,19 @@ const toggleParent = (parentId) => {
   }
 }
 
+// --- New Sorting Method ---
+const sortBy = (column) => {
+  if (sortColumn.value === column) {
+    // If clicking the same column, toggle direction
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    // If clicking a new column, set it and default to ascending
+    sortColumn.value = column;
+    sortDirection.value = 'asc';
+  }
+};
+
+
 const loadReport = async () => {
   try {
     loading.value = true
@@ -176,7 +243,7 @@ const loadReport = async () => {
     const params = {
       date: reportDate.value
     }
-    
+
     if (branchStore.selectedBranch) {
       params.branch = branchStore.selectedBranch
     }
@@ -199,7 +266,7 @@ const exportToExcel = async () => {
     const params = {
       date: reportDate.value
     }
-    
+
     if (branchStore.selectedBranch) {
       params.branch = branchStore.selectedBranch
     }
@@ -208,7 +275,7 @@ const exportToExcel = async () => {
       params,
       responseType: 'blob'
     })
-    
+
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
@@ -228,73 +295,3 @@ onMounted(() => {
   loadReport()
 })
 </script>
-
-<style scoped>
-.parent-row {
-  background-color: #f8f9fa;
-  font-weight: 500;
-}
-
-.child-row {
-  background-color: white;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.table-responsive {
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-.text-muted small {
-  font-size: 0.8rem;
-  display: block;
-}
-.text-muted strong {
-  font-size: 0.9rem;
-}
-
-/* --- New Styles for Header Layout --- */
-
-.card-header {
-  /* Ensure header content stays in one line on larger screens */
-  flex-wrap: nowrap; /* Prevent wrapping in the header itself */
-}
-
-.header-controls {
-  gap: 0.5rem; /* Adds space between date input and export button */
-}
-
-.date-input {
-  /* Move reportDate left by reducing its width */
-  width: 140px; /* Adjust this value as needed, e.g., 120px-150px */
-  min-width: 120px; /* Prevent it from becoming too small */
-}
-
-.excel-export-btn {
-  /* Ensure Excel export button stays in one line */
-  white-space: nowrap; /* Prevent text wrapping */
-  width: 120px; /* Fixed width to prevent content shifting */
-  text-align: center; /* Center text within the button */
-}
-
-/* Optional: Adjust for smaller screens if needed */
-@media (max-width: 768px) {
-  .card-header {
-    flex-direction: column; /* Stack items vertically on small screens */
-    align-items: flex-start; /* Align stacked items to the start */
-  }
-  .header-controls {
-    width: 100%; /* Make controls take full width */
-    justify-content: flex-start; /* Align controls to the left */
-    margin-top: 0.5rem; /* Add some space from the title */
-  }
-  .date-input,
-  .excel-export-btn {
-    width: auto; /* Allow them to resize on small screens */
-    flex-grow: 1; /* Allow them to grow if needed */
-  }
-}
-</style>

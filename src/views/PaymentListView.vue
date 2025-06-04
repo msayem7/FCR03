@@ -1,4 +1,3 @@
-<!-- PaymentListView.vue -->
 <template>
   <div class="container-fluid">
     <div class="row mb-3">
@@ -13,7 +12,7 @@
     </div>
 
     <!-- Filter Section -->
-    <div class="card mb-4">
+    <div class="card mb-4 filter-section">
       <div class="card-body">
         <form @submit.prevent="loadPayments">
           <div class="row g-3">
@@ -55,9 +54,10 @@
             <span class="visually-hidden">Loading...</span>
           </div>
         </div>
+
         <div v-else class="table-responsive">
-          <table class="table table-hover">
-            <thead>
+          <table class="table table-striped table-hover">
+            <thead class="table-header">
               <tr>
                 <th>Date</th>
                 <th>Customer</th>
@@ -76,19 +76,17 @@
                 <td>{{ formatNumber(payment.claim_amount)}}</td>
                 <td>{{ formatNumber(payment.total_amount)}}</td>
                 <td>{{ formatNumber(payment.shortage_amount)}}</td>
-                <!-- <td>{{ cashAndBankAmount(payment)}}</td> -->
-                <!-- <td>{{ claimAmount(payment) }}</td> -->
                 <td>
                   <button 
                     @click="viewPaymentDetails(payment)" 
                     class="btn btn-sm btn-outline-primary"
                   >
-                    <i class="bi bi-eye"></i> View
+                    <i class="bi bi-eye"></i> 
                   </button>
                 </td>
               </tr>
               <tr v-if="payments && payments.length === 0">
-                <td colspan="5" class="text-center">No payments found</td>
+                <td colspan="7" class="text-center">No payments found</td>
               </tr>
             </tbody>
           </table>
@@ -127,28 +125,18 @@
     <div class="modal fade" id="paymentDetailsModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
-          <div class="modal-header">
+          <div class="modal-header bg-primary text-white">
             <h5 class="modal-title">Payment Details</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div v-if="selectedPayment">
-              <div class="row mb-3">
-                <div class="col-md-6">
-                  <strong>Date:</strong> {{ formatDate(selectedPayment.received_date) }}
-                </div>
-                <div class="col-md-6">
-                  <strong>Customer:</strong> {{ selectedPayment.customer.name }}
-                </div>
-              </div>
-              
-              <table class="table table-sm">
-                <thead>
+            <div v-if="selectedPayment">              
+              <table class="table table-striped table-sm">
+                <thead class="table-header">
                   <tr>
                     <th>Instrument</th>
                     <th>Detail</th>
                     <th class="text-end">Amount</th>
-                    <th>Allocated</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -157,8 +145,44 @@
                     <td>{{ detail.detail }}</td>
                     <td class="text-end">{{ formatNumber(detail.amount) }}</td>
                   </tr>
+                  <tr class="table-total-row">
+                    <td colspan="2"><strong>Total</strong></td>
+                    <td class="text-end">{{ formatNumber(selectedPayment.payment_details.reduce((sum, d) => sum + parseFloat(d.amount), 0)) }}</td>
+                  </tr>
                 </tbody>
               </table>
+
+              <div class="mt-4">
+                <h5 class="mb-3">Invoice Details</h5>              
+                <table class="table table-striped table-sm">
+                  <thead class="table-header">
+                    <tr>
+                      <th>GRN</th>
+                      <th>Customer Name</th>
+                      <th>Transaction Date</th>
+                      <th class="text-end">Sales Amount</th>
+                      <th class="text-end">Sales Return</th>
+                      <th class="text-end">Net Sales</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="invoice in selectedPayment.invoices" :key="invoice.id">
+                      <td>{{ invoice.grn }}</td>
+                      <td>{{ invoice.customer_name }}</td>
+                      <td>{{ invoice.transaction_date }}</td>
+                      <td class="text-end">{{ formatNumber(invoice.sales_amount) }}</td>
+                      <td class="text-end">{{ formatNumber(invoice.sales_return) }}</td>
+                      <td class="text-end">{{ formatNumber(netSales(invoice))}}</td>
+                    </tr>
+                    <tr class="table-total-row">
+                      <td colspan="3"><strong>Total</strong></td>
+                      <td class="text-end">{{ formatNumber(selectedPayment.invoices.reduce((sum, i) => sum + parseFloat(i.sales_amount), 0)) }}</td>
+                      <td class="text-end">{{ formatNumber(selectedPayment.invoices.reduce((sum, i) => sum + parseFloat(i.sales_return), 0)) }}</td>
+                      <td class="text-end">{{ formatNumber(selectedPayment.invoices.reduce((sum, i) => sum + parseFloat(i.sales_amount - i.sales_return), 0)) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
           <div class="modal-footer">
@@ -171,7 +195,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useBranchStore } from '@/stores/branchStore'
 import axios from '@/plugins/axios'
 import { formatDate, formatNumber } from '@/utils/ezFormatter'
@@ -280,6 +304,10 @@ const calculateTotalAmount = (payment) => {
   }, 0)
 }
 
+const netSales = (invoice)=>{
+    return (invoice.sales_amount - invoice.sales_return)
+  }
+
 const cashAndBankAmount = (payment) => {
   return payment.payment_details.reduce((sum, detail) => {    
     // Check if the amount is a valid number before adding it
@@ -337,5 +365,62 @@ onMounted(() => {
 <style scoped>
 .table th {
   white-space: nowrap;
+}
+
+/* Main Table Styling */
+.filter-section {
+  background-color: #f8f9fa;
+  border-left: 4px solid #0d6efd;
+}
+
+.table-header {
+  background-color: #343a40;
+  color: white;
+}
+
+.table-header th {
+  font-weight: 500;
+  padding: 12px 16px;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Modal Styling */
+.modal-header {
+  padding: 12px 16px;
+}
+
+.table-total-row {
+  background-color: #f1f8ff !important;
+  font-weight: bold;
+}
+
+/* Button Styling */
+.btn-outline-primary {
+  border-width: 1px;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filter-section .col-md-3,
+  .filter-section .col-md-2 {
+    margin-bottom: 10px;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 </style>
