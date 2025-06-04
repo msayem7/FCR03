@@ -4,7 +4,7 @@
       <!-- Brand Logo -->
       <router-link to="/" class="navbar-brand">
         <img src="@/assets/logo.png" alt="Logo" class="brand-logo">
-        Sales bill receving management
+        Customer Payment Monitoring
       </router-link>
 
       <!-- Mobile Toggle -->
@@ -117,7 +117,7 @@ const menuItems = ref([
     icon: 'bi-currency-dollar',
     submenu: [ 
       {name: 'Offices', link: '/branches',  icon: 'bi-house-door'},
-      { name: 'Claims', link: '/claims', icon: 'bi bi-card-list'},
+      // { name: 'Claims', link: '/claims', icon: 'bi bi-card-list'},
       // { name: 'Deductions', link: '/deductions', icon: 'bi bi-receipt-cutoff' },
      
     ]
@@ -128,9 +128,8 @@ const menuItems = ref([
     icon: 'bi-wallet2',
     submenu: [      
     { name: 'Customers', link: '/customers', icon: 'bi-people' },
-    { name: 'Credit Invoices', link: '/credit-invoices', icon: 'bi-cash-coin' }, ///claim/categories/
-    { name: 'Customer Payment', link: '/cheques/customer/payments', icon: 'bi-list-ul' },
-    { name: 'Payments', link: '/operations/payment', icon: 'bi-cash-coin' },
+    { name: 'Credit Invoice', link: '/credit-invoices', icon: 'bi-list-ul' }, ///claim/categories/
+    { name: 'Customer Payment', link: '/operations/payment', icon: 'bi-cash-coin' },
     // { name: 'Cheques', link: '/cheques', icon: 'bi-list-ul' },
     // { name: 'Pending Cheque', link: '/cheques/pending', icon: 'bi-clock-history' },
     // { name: 'Deposited Cheque', link: '/cheques/deposited', icon: 'bi-check-circle' }
@@ -140,8 +139,8 @@ const menuItems = ref([
     name: 'Reports',
     icon: 'bi-bar-chart',
     submenu: [
-    { name: 'Customer Statement', link: '/reports/customer-statement', icon: 'bi-receipt' },   
-    { name: 'Invoicewise Payment Report', link: '/reports/invoice-payments', icon: 'bi-receipt' },
+    // { name: 'Customer Statement', link: '/reports/customer-statement', icon: 'bi-receipt' },   
+    // { name: 'Invoicewise Payment Report', link: '/reports/invoice-payments', icon: 'bi-receipt' },
     // { name: 'Payment Detail', link: '/reports/invoice/cheque', icon: 'bi-graph-up' },
     // { name: 'Customer Due Payements', link: '/due-payements', icon: 'bi-receipt' }
     ]

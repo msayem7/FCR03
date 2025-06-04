@@ -1,7 +1,7 @@
 <template>
   <div class="working-branch-selector col-3 mb-3">
     <div class="row align-items-center g-2">
-      <label class="col-6 col-form-label text-end">Working Office:</label>
+      <label class="col-6 col-form-label text-end">Office:</label>
       <div class="col-6">
         <select 
           v-model="branchStore.selectedBranch" 
