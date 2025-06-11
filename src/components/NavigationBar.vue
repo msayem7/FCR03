@@ -130,6 +130,7 @@ const menuItems = ref([
     { name: 'Customers', link: '/customers', icon: 'bi-people' },
     { name: 'Credit Invoice', link: '/credit-invoices', icon: 'bi-list-ul' }, ///claim/categories/
     { name: 'Customer Payment', link: '/operations/payment', icon: 'bi-cash-coin' },
+    { name: 'Claims List', link: '/reports/claim-list-view', icon: 'bi-list-ul' },
     // { name: 'Cheques', link: '/cheques', icon: 'bi-list-ul' },
     // { name: 'Pending Cheque', link: '/cheques/pending', icon: 'bi-clock-history' },
     // { name: 'Deposited Cheque', link: '/cheques/deposited', icon: 'bi-check-circle' }
@@ -140,7 +141,6 @@ const menuItems = ref([
     icon: 'bi-bar-chart',
     submenu: [
     // { name: 'Customer Statement', link: '/reports/customer-statement', icon: 'bi-receipt' },   
-    // { name: 'Invoicewise Payment Report', link: '/reports/invoice-payments', icon: 'bi-receipt' },
     // { name: 'Payment Detail', link: '/reports/invoice/cheque', icon: 'bi-graph-up' },
     // { name: 'Customer Due Payements', link: '/due-payements', icon: 'bi-receipt' }
     ]
