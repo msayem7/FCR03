@@ -88,6 +88,16 @@
               <tr v-if="payments && payments.length === 0">
                 <td colspan="7" class="text-center">No payments found</td>
               </tr>
+              <!-- Total Row -->
+              <tr class="table-total-row" v-if="payments && payments.length > 0">
+                <td><strong>Total</strong></td>
+                <td></td>
+                <td><strong>{{ formatNumber(payments.reduce((sum, p) => sum + parseFloat(p.cash_equivalent_amount || 0), 0)) }}</strong></td>
+                <td><strong>{{ formatNumber(payments.reduce((sum, p) => sum + parseFloat(p.claim_amount || 0), 0)) }}</strong></td>
+                <td><strong>{{ formatNumber(payments.reduce((sum, p) => sum + parseFloat(p.total_amount || 0), 0)) }}</strong></td>
+                <td><strong>{{ formatNumber(payments.reduce((sum, p) => sum + parseFloat(p.shortage_amount || 0), 0)) }}</strong></td>
+                <td></td>
+              </tr>
             </tbody>
           </table>
         </div>
