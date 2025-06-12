@@ -10,25 +10,53 @@
     <div class="card mb-4">
       <div class="card-body">
         <div class="row g-3">
-          <div class="col-md-3">
+          <!-- Date filters -->
+          <div class="col-md-2">
             <input type="date" v-model="filters.dateFrom" class="form-control">
           </div>
-          <div class="col-md-3">
+          <div class="col-md-2">
             <input type="date" v-model="filters.dateTo" class="form-control">
           </div>
-          <div class="col-md-4">
-            <CustomerDropdown
-              v-model="filters.customer"
-              :show-labels="false"
-              layout="stacked"
-            />
-          </div>
-          <!-- <div class="col-md-4">
-            <select v-model="filters.customer" class="form-select">
-              <option value="">All Customers</option>
-              <option v-for="c in customers" :value="c.alias_id" :key="c.alias_Id">{{ c.name }}</option>
+          
+          <!-- Customer filters -->
+          <div class="col-md-2">
+            <select v-model="filters.parentCustomer" class="form-select" @change="updateChildCustomers">
+              <option value="">All Parent Customers</option>
+              <option v-for="customer in parentCustomers" 
+                      :value="customer.alias_id" 
+                      :key="customer.alias_id">
+                {{ customer.name }}
+              </option>
             </select>
-          </div> -->
+          </div>
+          <div class="col-md-2">
+            <select v-model="filters.childCustomer" class="form-select" :disabled="!filters.parentCustomer">
+              <option value="">All Child Customers</option>
+              <option v-for="customer in childCustomers" 
+                      :value="customer.alias_id" 
+                      :key="customer.alias_id">
+                {{ customer.name }}
+              </option>
+            </select>
+          </div>
+          
+          <!-- New filter options -->
+          <div class="col-md-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" v-model="filters.showDueOnly" id="showDueOnly">
+              <label class="form-check-label" for="showDueOnly">
+                Show Due Only
+              </label>
+            </div>
+            <div class="form-check" :class="{ 'text-muted': !filters.showDueOnly }">
+              <input class="form-check-input" type="checkbox" v-model="filters.showMaturedOnly" 
+                     id="showMaturedOnly" :disabled="!filters.showDueOnly" >
+              <label class="form-check-label" for="showMaturedOnly">
+                Show Matured Only
+              </label>
+            </div>
+          </div>
+          
           <div class="col-md-2">
             <button @click="fetchInvoices" class="btn btn-primary w-100">Filter</button>
           </div>
@@ -93,16 +121,88 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useBranchStore } from '@/stores/branchStore'
 import axios from '@/plugins/axios'
 import { formatDate, formatNumber, parseNumber } from '@/utils/ezFormatter'
-import CustomerDropdown from '@/components/CustomerDropdown.vue'
+// import CustomerDropdown from '@/components/CustomerDropdown.vue'
 
 const store = useBranchStore()
 const invoices = ref([])
-const customers = ref([])
+const allCustomers = ref([])
+const parentCustomers = ref([])
+const childCustomers = ref([])
+// const customers = ref([])
+
 const filters = ref({
   dateFrom: '',
   dateTo: '',
-  customer: ''
+  parentCustomer: '',
+  childCustomer: '',
+  showDueOnly: true,      // New filter
+  showMaturedOnly: false   // New filter
 })
+
+// const filters = ref({
+//   dateFrom: '',
+//   dateTo: '',
+//   parentCustomer: '',
+//   childCustomer: ''
+// })
+
+// const fetchInvoices = async () => {
+//   try {
+//     if (!store.selectedBranch) {
+//       invoices.value = []
+//       throw new Error('Select a working office first')
+//     }
+
+//     // console.log("Filters value", filters.value)
+    
+//     const params = {
+//       branch: store.selectedBranch,
+//       transaction_date_after: filters.value.dateFrom,
+//       transaction_date_before: filters.value.dateTo,
+//       customer: filters.value.customer?.alias_id || filters.value.customer,
+//       _t: new Date().getTime()
+//     }
+    
+//     console.log('Invoice Filter params', params)
+
+//     const { data } = await axios.get('/v1/chq/credit-invoices/', { params })
+//     invoices.value = data    
+//   } catch (error) {
+//     console.error('Fetch error:', error)
+//     alert('Credit Invoice: ' + error.message)
+//   }
+// }
+
+// const fetchInvoices = async () => {
+//   try {
+//     if (!store.selectedBranch) {
+//       invoices.value = []
+//       throw new Error('Select a working office first')
+//     }
+    
+//     const params = {
+//       branch: store.selectedBranch,
+//       transaction_date_after: filters.value.dateFrom,
+//       transaction_date_before: filters.value.dateTo,
+//       _t: new Date().getTime()
+//     }
+
+//     // If child customer is selected, use that
+//     if (filters.value.childCustomer) {
+//       params.customer = filters.value.childCustomer
+//     } 
+//     // If only parent customer is selected, the backend will handle getting all child invoices
+//     else if (filters.value.parentCustomer) {
+//       params.customer = filters.value.parentCustomer
+//     }
+
+//     const { data } = await axios.get('/v1/chq/credit-invoices/', { params })
+//     invoices.value = data    
+//   } catch (error) {
+//     console.error('Fetch error:', error)
+//     alert('Credit Invoice: ' + error.message)
+//   }
+// }
 
 const fetchInvoices = async () => {
   try {
@@ -110,18 +210,31 @@ const fetchInvoices = async () => {
       invoices.value = []
       throw new Error('Select a working office first')
     }
-
-    // console.log("Filters value", filters.value)
     
     const params = {
       branch: store.selectedBranch,
       transaction_date_after: filters.value.dateFrom,
       transaction_date_before: filters.value.dateTo,
-      customer: filters.value.customer?.alias_id || filters.value.customer,
       _t: new Date().getTime()
     }
-    
-    console.log('Invoice Filter params', params)
+
+    // Customer filters
+    if (filters.value.childCustomer) {
+      params.customer = filters.value.childCustomer
+    } else if (filters.value.parentCustomer) {
+      params.customer = filters.value.parentCustomer
+    }
+
+    // Due and matured filters
+    if (filters.value.showDueOnly) {
+      params.payment = 'unpaid'  // This tells the backend to show unpaid invoices only
+      if (filters.value.showMaturedOnly) {
+        // We'll need to calculate the current date to determine matured invoices
+        params.report_date = new Date().toISOString().split('T')[0]
+      }
+    } else {
+      params.payment = 'all'  // Show all invoices regardless of payment status
+    }
 
     const { data } = await axios.get('/v1/chq/credit-invoices/', { params })
     invoices.value = data    
@@ -131,21 +244,74 @@ const fetchInvoices = async () => {
   }
 }
 
+// const fetchCustomers = async () => {
+//   try{
+//     const params = {
+//       is_active: true,
+//       branch: store.selectedBranch
+//     }
+//     const { data } = await axios.get('/v1/chq/customers/', { params })
+//     customers.value = data
+//   } catch (error) {
+//     console.error('Error loading customers: ', error)
+//     alert('Error loading customers: '+ error.message)
+//   }
+  
+// }
 
 const fetchCustomers = async () => {
-  try{
+  try {
     const params = {
       is_active: true,
       branch: store.selectedBranch
     }
     const { data } = await axios.get('/v1/chq/customers/', { params })
-    customers.value = data
+    allCustomers.value = data
+    
+    // Separate parent and child customers
+    parentCustomers.value = data.filter(c => c.is_parent)
+    updateChildCustomers()
   } catch (error) {
     console.error('Error loading customers: ', error)
     alert('Error loading customers: '+ error.message)
   }
-  
 }
+
+const updateChildCustomers = () => {
+
+  console.log('Updating child customers for parent:', filters.value.parentCustomer)
+  if (filters.value.parentCustomer) {
+    console.log('All customers:', allCustomers.value)
+    // allCustomers.value.forEach(c => {
+    //   console.log('c.Parent:', c.parent, c)
+    //   // if (!c.parent) 
+    //   //   console.log('c.Parent alias_id:', c.parent.alias_id, "filters.value.parentCustomer: ", filters.value.parentCustomer)
+    //   // else 
+    //   //   console.log('c.Parent is parent')
+    // })
+
+    childCustomers.value = allCustomers.value.filter(
+      c => c.parent === filters.value.parentCustomer
+      // c => c.parent && c.parent.alias_id === filters.value.parentCustomer
+    )
+  } else {
+    childCustomers.value = []
+  }
+  // Reset child customer selection when parent changes
+  filters.value.childCustomer = ''
+}
+
+// const updateChildCustomers = () => {
+//   if (filters.value.parentCustomer) {
+//     childCustomers.value = allCustomers.value.filter(
+//       c => c.parent?.alias_id === filters.value.parentCustomer
+//     )
+//   } else {
+//     childCustomers.value = []
+//   }
+//   // Reset child customer selection when parent changes
+//   filters.value.childCustomer = ''
+// }
 
 const calculatePaymentDate = (invoice) => {
   if (!invoice.transaction_date) return ''
