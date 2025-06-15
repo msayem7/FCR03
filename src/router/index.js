@@ -25,6 +25,7 @@ const routes = [
     { path: '/cheques', name: 'cheques', component: ChequeListView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/operations/payment', name: 'parent-customer-payment', component: PaymentListView, meta: {requiresAuth: true, hideNav: false} },
     { path: '/operations/payment/create', name: 'parent-customer-payment-create', component: PaymentForm, meta: {requiresAuth: true, hideNav: false} },
+    { path: '/operations/payment/edit/:id', name: 'parent-customer-payment-edit',  component: PaymentForm, meta: { requiresAuth: true, hideNav: false } },
 
     { path: '/cheques/pending', name: 'pending', component: PendingListView, meta: {requiresAuth: true, hideNav: false} },  //Check not yet deposited
     // { path: '/cheques/deposited', name: 'deposited', component: ChequeDepositedView, meta: {requiresAuth: true, hideNav: false} },

@@ -3,6 +3,12 @@
     <div class="row mb-3">
       <div class="col">
         <h2>{{ isEditMode ? 'Edit Payment' : 'Receive Customer Payment' }}</h2>
+        <div v-if="isEditMode && paymentData" class="text-muted small">
+          Last updated: {{ formatDateTime(paymentData.updated_at) }} by {{ paymentData.updated_by?.username || 'System' }}
+        </div>
+        <div v-else-if="isEditMode" class="text-muted small">
+          Loading payment details...
+        </div>
       </div>
     </div>
 
@@ -34,6 +40,7 @@
                   required
                   @change="loadCustomerInvoices"
                   id="customerSelect"
+                  :disabled="isEditMode"
                 >
                   <option value="Select a customer"></option>
                   <option 
@@ -187,7 +194,9 @@
                             v-model="selectedInvoices"
                             :value="invoice"
                             :key="invoice.alias_id"
+                            :data-paid="invoice.is_paid"                          
                           >
+                          <span v-if="invoice.is_paid" class="badge bg-success ms-2">Paid</span>
                         </td>
                         <td>{{ formatDate(invoice.transaction_date) }}</td>
                         <td>{{ invoice.grn }}</td>
@@ -254,13 +263,14 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBranchStore } from '@/stores/branchStore'
 import axios from '@/plugins/axios'
-import { formatDate, formatNumber } from '@/utils/ezFormatter'
+import { formatDate, formatNumber, formatDateTime} from '@/utils/ezFormatter'
 import { useNotificationStore } from '@/stores/notificationStore'
 
 const notificationStore = useNotificationStore()
 const route = useRoute()
 const router = useRouter()
 const branchStore = useBranchStore()
+
 
 // Split panel drag functionality
 const isDragging = ref(false)
@@ -305,23 +315,30 @@ const loadCustomerInvoices = async () => {
   if (!formData.value.customer) return
   
   try {
-    const response = await axios.get('/v1/chq/credit-invoices/', {
-      params: {
-        branch: branchStore.selectedBranch,
-        customer: formData.value.customer,
-        payment: 'unpaid' // Only unpaid invoices
-      }
-    })
-    customerInvoices.value = response.data.map(invoice => ({
-      ...invoice,
-      customer_name: invoice.customer_name,
-      net_due: invoice.sales_amount - invoice.sales_return
-    }))
+    if (!isEditMode.value) {
+      const response = await axios.get('/v1/chq/credit-invoices/', {
+        params: {
+          branch: branchStore.selectedBranch,
+          customer: formData.value.customer,
+          payment: 'unpaid' // Only unpaid invoices
+        }
+      })
+      customerInvoices.value = response.data.map(invoice => ({
+        ...invoice,
+        customer_name: invoice.customer_name,
+        net_due: invoice.sales_amount - invoice.sales_return
+      }))    
+    // } else {
+    //   const response = await axios.get(`/v1/chq/payment/${id}}credit-invoices/`, {
+    //     params: {
+    //       branch: branchStore.selectedBranch,
+    //       customer: formData.value.customer,
+    //       payment: 'unpaid',
+    //       exclude_allocated: true // Exclude already allocated invoices
+    //     }
+    //   })
+    }
     
-    console.log('Loaded response invoices:', response.data)
-    console.log('Loaded customer invoices:', customerInvoices.value)
-
-
     selectedInvoices.value = [] // Clear previous selections when customer changes
   } catch (error) {
     notificationStore.showError('Failed to load customer invoices: ' + error.message)
@@ -330,16 +347,25 @@ const loadCustomerInvoices = async () => {
 }
 
 
-const filteredInvoices = computed(() => {
-  let filtered = customerInvoices.value
+// Update the filteredInvoices computed property to show payment status
 
-  // Apply filter
+
+const filteredInvoices = computed(() => {
+  let filtered = customerInvoices.value.map(invoice => ({
+    ...invoice,
+    is_paid: !!invoice.payment
+    // is_paid: selectedInvoices.value.some(
+    //   selected => selected.alias_id === invoice.alias_id
+    // )
+  }))
+
+  // Apply filter if any
   if (invoiceFilter.value) {
-    const filter = invoiceFilter.value.toLowerCase()
+    const filter = invoiceFilter.value.toLowerCase();   // what is the function of tolowercase here
     filtered = filtered.filter(invoice => 
-      invoice.grn.toLowerCase().includes(filter) ||
-      (invoice.customer?.name || '').toLowerCase().includes(filter) ||
-      invoice.transaction_details?.toLowerCase().includes(filter)
+      (invoice.grn || '').toLowerCase().includes(filter) ||
+      (invoice.customer_name || '').toLowerCase().includes(filter) ||
+      (invoice.transaction_details || '').toLowerCase().includes(filter)
     )
   }
   
@@ -418,10 +444,13 @@ const paymentDifference = computed(() => {
 
 // Original payment form code (with minor adjustments)
 const instrumentTypeList = ref([])
+
+const paymentData = ref(null)
 const isEditMode = computed(() => route.params.id !== undefined)
 const isSubmitting = ref(false)
 const isLoading = ref(false)
 const errors = ref({})
+
 
 const formData = ref({
   received_date: new Date().toISOString().split('T')[0],
@@ -490,45 +519,134 @@ const loadPaymentInstruments = async () => {
   }
 }
 
+// In the script section of PaymentForm.vue
+
 const loadPaymentData = async (id) => {
   try {
     isLoading.value = true
     const response = await axios.get(`/v1/chq/payments/${id}/`)
-    const payment = response.data
+    paymentData.value = response.data
 
+    console.log('Loaded payment:', paymentData)
+    // Set form data
     formData.value = {
-      received_date: payment.received_date,
-      customer: payment.customer.alias_id,
-      payment_details: payment.payment_details.map(detail => ({
-        payment_instrument: detail.payment_instrument.id,
+      received_date: paymentData.value.received_date,
+      customer: paymentData.value.customer,
+      payment_details: paymentData.value.payment_details.map(detail => ({
+        id: detail.id,
+        payment_instrument: detail.payment_instrument,
         id_number: detail.id_number || '',
         amount: detail.amount,
         detail: detail.detail,
-      })) || [{
-        payment_instrument: '',
-        amount: 0,
-        detail: '',
-      }]
+      })),
+      version: paymentData.value.version
     }
-    
-    // Load invoices for this customer
+
+    // Load all invoices for this customer (both paid and unpaid)
     await loadCustomerInvoices()
+    //const paidInvoicesResponse = paymentData.value.invoices || []
     
-    // Load existing allocations. 
-    const allocationResponse = await axios.get(`/v1/chq/payments/${id}/invoices/`)
-    selectedInvoices.value = allocationResponse.data.map(item => ({
-      ...item.credit_invoice,
-      // customer..name
-      customer_name: item.credit_invoice.customer_name,
-      net_due: item.credit_invoice.sales_amount - item.credit_invoice.sales_return
+     const paidInvoicesResponse = await axios.get(`/v1/chq/credit-invoices/`, {
+      params: {
+        branch: branchStore.selectedBranch,
+        customer: paymentData.value.customer.alias_id,
+        payment: paymentData.value.alias_id
+      }
+    })
+
+    // Get paid invoices for this payment
+    const upaidInvoicesResponse = await axios.get(`/v1/chq/credit-invoices/`, {
+      params: {
+        branch: branchStore.selectedBranch,
+        customer: paymentData.value.customer,
+        payment: 'unpaid'
+      }
+    })
+
+    // Mark paid invoices as selected
+    const paidInvoices = paidInvoicesResponse.data.map(invoice => ({
+      ...invoice,
+      customer_name: invoice.customer_name,
+      net_due: invoice.sales_amount - invoice.sales_return
     }))
+
+    const unpaidInvoices = upaidInvoicesResponse.data.map(invoice => ({
+      ...invoice,
+      customer_name: invoice.customer_name,
+      net_due: invoice.sales_amount - invoice.sales_return
+    }))
+
+    // console.log('Paid Invoices:', paidInvoices)
+    // console.log('Unpaid Invoices:', unpaidInvoices)
+    // Update selected invoices
+    //// 
+    // selectedInvoices.value = paidInvoices
+    // console.log('selectedInvoices:', selectedInvoices)
+
+    // Update the invoices list to show both paid and unpaid
+    customerInvoices.value = [
+      ...paidInvoices,
+      ...unpaidInvoices,
+      ...customerInvoices.value.filter(
+        inv => !paidInvoices.some(paid => paid.alias_id === inv.alias_id)
+      )
+    ]
+    
+    selectedInvoices.value = filteredInvoices.value.filter(
+      invoice => invoice.is_paid === true
+    )
+
+    
   } catch (error) {
     notificationStore.showError('Failed to load payment data: ' + error.message)
-    router.push('/payment')
+    router.push('/operations/payment')
   } finally {
     isLoading.value = false
   }
 }
+
+
+
+
+// const loadPaymentData = async (id) => {
+//   try {
+//     isLoading.value = true
+//     const response = await axios.get(`/v1/chq/payments/${id}/`)
+//     const payment = response.data
+
+//     formData.value = {
+//       received_date: payment.received_date,
+//       customer: payment.customer.alias_id,
+//       payment_details: payment.payment_details.map(detail => ({
+//         payment_instrument: detail.payment_instrument.id,
+//         id_number: detail.id_number || '',
+//         amount: detail.amount,
+//         detail: detail.detail,
+//       })) || [{
+//         payment_instrument: '',
+//         amount: 0,
+//         detail: '',
+//       }]
+//     }
+    
+//     // Load invoices for this customer
+//     await loadCustomerInvoices()
+    
+//     // Load existing allocations. 
+//     const allocationResponse = await axios.get(`/v1/chq/payments/${id}/invoices/`)
+//     selectedInvoices.value = allocationResponse.data.map(item => ({
+//       ...item.credit_invoice,
+//       // customer..name
+//       customer_name: item.credit_invoice.customer_name,
+//       net_due: item.credit_invoice.sales_amount - item.credit_invoice.sales_return
+//     }))
+//   } catch (error) {
+//     notificationStore.showError('Failed to load payment data: ' + error.message)
+//     router.push('/payment')
+//   } finally {
+//     isLoading.value = false
+//   }
+// }
 
 const addPaymentDetail = () => {
   formData.value.payment_details.push({
@@ -565,7 +683,6 @@ const cashAndClaimAmount = () => {
 
   // Check if formData.value.payment_details exists and is an array
   if (!formData.value || !Array.isArray(formData.value.payment_details)) {
-    console.warn("Invalid or missing payment_details in formData.");
     return { cashSum: 0, nonCashSum: 0 }; // Return default if data is not structured as expected
   }
 
@@ -614,6 +731,97 @@ const cashAndClaimAmount = () => {
   return { cashSum, nonCashSum }; // Return the accumulated sums
 };
 
+
+const validateIdNumbers = () => {
+  const idNumbers = new Set();
+  
+  for (const [index, detail] of formData.value.payment_details.entries()) {
+    if (!isAutoNumber(detail) && detail.id_number) {
+      if (idNumbers.has(detail.id_number)) {
+        return `Duplicate ID number at instrument ${index + 1}`;
+      }
+      idNumbers.add(detail.id_number);
+    }
+  }
+  return null;
+};
+
+const submitForm = async () => {
+    isSubmitting.value = true
+  errors.value = {}
+  
+  // Validate ID numbers
+  const idError = validateIdNumbers();
+  if (idError) {
+    notificationStore.showError(idError);
+    isSubmitting.value = false;
+    return;
+  }
+
+  isSubmitting.value = true
+  errors.value = {}
+
+  try {
+    const cash_claim = cashAndClaimAmount()
+
+    const payload = {
+      received_date: formData.value.received_date,
+      customer: formData.value.customer,
+      branch: branchStore.selectedBranch,
+      payment_details: formData.value.payment_details.map(detail => ({
+        payment_instrument: detail.payment_instrument,
+        id_number: detail.id_number,
+        amount: parseFloat(detail.amount),
+        detail: detail.detail,
+      })),
+      invoices: selectedInvoices.value.map(invoice => ({
+        alias_id: invoice.alias_id,
+        ...invoice
+      })),
+      shortage_amount: -1 * paymentDifference.value,
+      cash_equivalent_amount: cash_claim.cashSum,
+      claim_amount: cash_claim.nonCashSum,
+      total_amount: totalPaymentAmount.value,
+      version: isEditMode.value ? paymentData.value.version : 1 // Include version for optimistic concurrency
+    }
+
+    if (isEditMode.value) {
+      await axios.put(`/v1/chq/payments/${route.params.id}/`, payload)
+      notificationStore.showSuccess('Payment updated successfully')
+    } else {
+      await axios.post('/v1/chq/payments/', payload)
+      notificationStore.showSuccess('Payment created successfully')
+    }
+    router.push('/operations/payment')
+  } catch (error) {
+    handleSubmitError(error)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const handleSubmitError = (error) => {
+  if (error.response?.status === 409) {
+    // Version conflict error
+    notificationStore.showError('This payment was modified by another user. Please refresh and try again.')
+  } else if (error.response?.data?.error?.details) {
+    const newErrors = {}
+    
+    error.response.data.error.details.payment_details?.forEach((detailErrors, index) => {
+      Object.entries(detailErrors).forEach(([field, messages]) => {
+        if (messages.length > 0) {
+          newErrors[`payment_details.${index}.${field}`] = messages[0]
+        }
+      })
+    })
+
+    errors.value = newErrors
+    notificationStore.showError('Please correct the errors in the form')
+  } else {
+    errors.value.general = [error.message || 'Failed to submit payment']
+    notificationStore.showError(error.message || 'Failed to submit payment')
+  }
+} 
 // const cashNonCashWiseAmount = () => {
 
 //   return formData.value.payment_details.forEach((detail) => {
@@ -639,73 +847,76 @@ const cashAndClaimAmount = () => {
 // }
 
 
-const submitForm = async () => {
-  isSubmitting.value = true
-  errors.value = {}
+// const submitForm = async () => {
+//   isSubmitting.value = true
+//   errors.value = {}
 
-  try {
+//   try {
     
-    const cash_claim = cashAndClaimAmount()
+//     const cash_claim = cashAndClaimAmount()
 
-    const payload = {
-      received_date: formData.value.received_date,
-      customer: formData.value.customer,
-      branch: branchStore.selectedBranch,
-      payment_details: formData.value.payment_details.map(detail => ({
-        payment_instrument: detail.payment_instrument,
-        id_number: detail.id_number,
-        amount: parseFloat(detail.amount),
-        detail: detail.detail,
-      })),
-      // Add invoice allocations to payload
-      invoices: selectedInvoices.value.map(invoice => ({
-             //allocated_amount: invoice.net_due,
-        alias_id: invoice.alias_id,
-        ...invoice
-      })),
+//     const payload = {
+//       received_date: formData.value.received_date,
+//       customer: formData.value.customer,
+//       branch: branchStore.selectedBranch,
+//       payment_details: formData.value.payment_details.map(detail => ({
+//         payment_instrument: detail.payment_instrument,
+//         id_number: detail.id_number,
+//         amount: parseFloat(detail.amount),
+//         detail: detail.detail,
+//       })),
+//       // Add invoice allocations to payload
+//       invoices: selectedInvoices.value.map(invoice => ({
+//              //allocated_amount: invoice.net_due,
+//         alias_id: invoice.alias_id,
+//         ...invoice
+//       })),
 
-      shortage_amount: -1 * paymentDifference.value,
-      cash_equivalent_amount: cash_claim.cashSum,
-      claim_amount: cash_claim.nonCashSum,
-      total_amount: totalPaymentAmount.value
-    }
+//       shortage_amount: -1 * paymentDifference.value,
+//       cash_equivalent_amount: cash_claim.cashSum,
+//       claim_amount: cash_claim.nonCashSum,
+//       total_amount: totalPaymentAmount.value
+//     }
 
-    if (isEditMode.value) {
-      await axios.put(`/v1/chq/payments/${route.params.id}/`, payload)
-    } else {
-      await axios.post('/v1/chq/payments/', payload)
-    }
-    notificationStore.showSuccess('Payment saved successfully')
-    router.push('/operations/payment')
-  } catch (error) {
-    if (error.response?.data?.error?.details) {
-      const newErrors = {}
+//     if (isEditMode.value) {
+//       await axios.put(`/v1/chq/payments/${route.params.id}/`, payload)
+//     } else {
+//       await axios.post('/v1/chq/payments/', payload)
+//     }
+//     notificationStore.showSuccess('Payment saved successfully')
+//     router.push('/operations/payment')
+//   } catch (error) {
+//     if (error.response?.data?.error?.details) {
+//       const newErrors = {}
       
-      // Process payment_details errors
-      error.response.data.error.details.payment_details?.forEach((detailErrors, index) => {
-        Object.entries(detailErrors).forEach(([field, messages]) => {
-          if (messages.length > 0) {
-            newErrors[`payment_details.${index}.${field}`] = messages[0]
-          }
-        })
-      })
+//       // Process payment_details errors
+//       error.response.data.error.details.payment_details?.forEach((detailErrors, index) => {
+//         Object.entries(detailErrors).forEach(([field, messages]) => {
+//           if (messages.length > 0) {
+//             newErrors[`payment_details.${index}.${field}`] = messages[0]
+//           }
+//         })
+//       })
 
-      errors.value = newErrors
-      notificationStore.showError('Please correct the errors in the form')
-    } else {
-      errors.value.general = [error.message || 'Failed to submit payment']
-      notificationStore.showError(error.message || 'Failed to submit payment')
-    }
-  } finally {
-    isSubmitting.value = false
-  }
-}
+//       errors.value = newErrors
+//       notificationStore.showError('Please correct the errors in the form')
+//     } else {
+//       errors.value.general = [error.message || 'Failed to submit payment']
+//       notificationStore.showError(error.message || 'Failed to submit payment')
+//     }
+//   } finally {
+//     isSubmitting.value = false
+//   }
+// }
 
 onMounted(() => {
+  // console.log('Loading instrument types:', instrumentTypeList.value)
   loadInstrumentTypes()
+  // console.log('Loading parent customers:', parentCustomers.value)
   loadParentCustomers()
+  // console.log('Loading payment instruments:', paymentInstruments.value)
   loadPaymentInstruments()
-
+  
   if (isEditMode.value) {
     loadPaymentData(route.params.id)
   }
@@ -713,6 +924,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
 .split-panels {
   display: flex;
   height: 400px;
@@ -796,5 +1008,23 @@ th:hover {
 .form-floating input, .form-floating select {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
+}
+
+/* Add to the style section */
+.badge {
+  font-size: 0.75em;
+  vertical-align: middle;
+}
+
+tr td:first-child {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Style for paid rows */
+tr[data-paid="true"] {
+  opacity: 0.7;
+  background-color: #f8f9fa;
 }
 </style>

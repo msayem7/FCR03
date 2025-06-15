@@ -4,6 +4,10 @@ const monthNames = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
+export function formatDateTime (dateString) {
+  if (!dateString) return 'N/A'
+  return formatDate(dateString) // Or implement a specific date-time formatter
+}
 
 export function formatDate(dateString) {
   

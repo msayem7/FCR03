@@ -83,6 +83,13 @@
                   >
                     <i class="bi bi-eye"></i> 
                   </button>
+                  <button 
+                    @click="editPayment(payment)" 
+                    class="btn btn-sm btn-outline-warning"
+                    :disabled="isEditing"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
                 </td>
               </tr>
               <tr v-if="payments && payments.length === 0">
@@ -208,8 +215,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useBranchStore } from '@/stores/branchStore'
 import axios from '@/plugins/axios'
-import { formatDate, formatNumber } from '@/utils/ezFormatter'
+import { useRouter } from 'vue-router'
 import { Modal } from 'bootstrap'
+import { formatDate, formatNumber } from '@/utils/ezFormatter'
 
 const branchStore = useBranchStore()
 const payments = ref([])
@@ -218,12 +226,22 @@ const selectedPayment = ref(null)
 const paymentDetailsModal = ref(null)
 const isLoading = ref(null)
 
+
+const router = useRouter()
+const isEditing = ref(false)
+
 const filters = ref({
   customer: '',
   date_from: new Date().toISOString().split('T')[0],
   date_to: new Date().toISOString().split('T')[0],
   is_fully_allocated: 'all'
 })
+
+const editPayment = (payment) => {
+  console.log('Editing payment:', payment)
+  isEditing.value = true
+  router.push(`/operations/payment/edit/${payment.alias_id}`)
+}
 
 const pagination = ref({
   current_page: 1,
