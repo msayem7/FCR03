@@ -107,11 +107,10 @@
                         </td>
                         <td>
                           <input 
-                            type="number" 
-                            v-model="detail.amount" 
-                            step="0.01" 
-                            min="0" 
-                            class="form-control form-control-sm"
+                            type="text"
+                            v-model="detail.formattedAmount" 
+                            @blur="updateAmount(index)"
+                            class="form-control form-control-sm text-end"
                             :class="{ 'is-invalid': errors[`payment_details.${index}.amount`] }"
                             required
                           >
@@ -263,7 +262,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useBranchStore } from '@/stores/branchStore'
 import axios from '@/plugins/axios'
-import { formatDate, formatNumber, formatDateTime} from '@/utils/ezFormatter'
+import { formatDate, formatNumber,parseNumber, formatDateTime} from '@/utils/ezFormatter'
 import { useNotificationStore } from '@/stores/notificationStore'
 
 const notificationStore = useNotificationStore()
@@ -452,6 +451,19 @@ const isLoading = ref(false)
 const errors = ref({})
 
 
+// const formData = ref({
+//   received_date: new Date().toISOString().split('T')[0],
+//   customer: '',
+//   payment_details: [
+//     {
+//       payment_instrument: '',
+//       id_number: '',
+//       amount: 0,
+//       detail: '',
+//     }
+//   ]
+// })
+
 const formData = ref({
   received_date: new Date().toISOString().split('T')[0],
   customer: '',
@@ -460,6 +472,7 @@ const formData = ref({
       payment_instrument: '',
       id_number: '',
       amount: 0,
+      formattedAmount: formatNumber(0), // Add formatted amount
       detail: '',
     }
   ]
@@ -522,26 +535,43 @@ const loadPaymentInstruments = async () => {
 // In the script section of PaymentForm.vue
 
 const loadPaymentData = async (id) => {
+  // try {
+  //   isLoading.value = true
+  //   const response = await axios.get(`/v1/chq/payments/${id}/`)
+  //   paymentData.value = response.data
+
+  //   console.log('Loaded payment:', paymentData)
+  //   // Set form data
+  //   formData.value = {
+  //     received_date: paymentData.value.received_date,
+  //     customer: paymentData.value.customer,
+  //     payment_details: paymentData.value.payment_details.map(detail => ({
+  //       alias_id: detail.alias_id,
+  //       payment_instrument: detail.payment_instrument,
+  //       id_number: detail.id_number || '',
+  //       amount: detail.amount,
+  //       detail: detail.detail,
+  //     })),
+  //     version: paymentData.value.version
+  //   }
   try {
     isLoading.value = true
     const response = await axios.get(`/v1/chq/payments/${id}/`)
     paymentData.value = response.data
 
-    console.log('Loaded payment:', paymentData)
-    // Set form data
     formData.value = {
       received_date: paymentData.value.received_date,
       customer: paymentData.value.customer,
       payment_details: paymentData.value.payment_details.map(detail => ({
-        id: detail.id,
+        alias_id: detail.alias_id,
         payment_instrument: detail.payment_instrument,
         id_number: detail.id_number || '',
         amount: detail.amount,
+        formattedAmount: formatNumber(detail.amount), // Format the amount
         detail: detail.detail,
       })),
       version: paymentData.value.version
     }
-
     // Load all invoices for this customer (both paid and unpaid)
     await loadCustomerInvoices()
     //const paidInvoicesResponse = paymentData.value.invoices || []
@@ -648,14 +678,29 @@ const loadPaymentData = async (id) => {
 //   }
 // }
 
+const updateAmount = (index) => {
+  const detail = formData.value.payment_details[index]
+  detail.amount = parseNumber(detail.formattedAmount)
+  detail.formattedAmount = formatNumber(detail.amount)
+}
+
 const addPaymentDetail = () => {
   formData.value.payment_details.push({
     payment_instrument: '',
     id_number: '',
     amount: 0,
+    formattedAmount: formatNumber(0), // Initialize with formatted value
     detail: '',
   })
 }
+// const addPaymentDetail = () => {
+//   formData.value.payment_details.push({
+//     payment_instrument: '',
+//     id_number: '',
+//     amount: 0,
+//     detail: '',
+//   })
+// }
 
 const removePaymentDetail = (index) => {
   formData.value.payment_details.splice(index, 1)
@@ -683,17 +728,18 @@ const cashAndClaimAmount = () => {
 
   // Check if formData.value.payment_details exists and is an array
   if (!formData.value || !Array.isArray(formData.value.payment_details)) {
-    return { cashSum: 0, nonCashSum: 0 }; // Return default if data is not structured as expected
+    return { cashSum: 0, nonCashSum: 0 };
   }
 
   formData.value.payment_details.forEach((detail) => {
+    const amount = parseNumber(detail.formattedAmount); // Use parsed amount
     // Basic validation for detail structure
     if (typeof detail.amount === 'undefined' || typeof detail.payment_instrument === 'undefined') {
         console.warn("Skipping malformed payment detail:", detail);
         return; // Skip to the next iteration
     }
 
-    const amount = Number(detail.amount); // Ensure amount is a number
+    //const amount = Number(detail.amount); // Ensure amount is a number
     if (isNaN(amount)) { // Handle cases where amount might not be a valid number
         console.warn(`Skipping transaction with invalid amount: ${detail.amount}`);
         return;
@@ -761,6 +807,10 @@ const submitForm = async () => {
   isSubmitting.value = true
   errors.value = {}
 
+  formData.value.payment_details.forEach(detail => {
+    detail.amount = parseNumber(detail.formattedAmount)
+  })
+
   try {
     const cash_claim = cashAndClaimAmount()
 
@@ -769,6 +819,7 @@ const submitForm = async () => {
       customer: formData.value.customer,
       branch: branchStore.selectedBranch,
       payment_details: formData.value.payment_details.map(detail => ({
+        alias_id: detail.alias_id,
         payment_instrument: detail.payment_instrument,
         id_number: detail.id_number,
         amount: parseFloat(detail.amount),
