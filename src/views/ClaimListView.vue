@@ -231,7 +231,7 @@ const filters = ref({
   claim_amount_min: '',
   claim_amount_max: '',
   refund_amount_min: '',
-  refund_amount_max: '',
+  refund_amount_max: '0',
   remaining_amount_min: '',
   remaining_amount_max: '',
 });

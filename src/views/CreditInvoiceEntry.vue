@@ -358,10 +358,17 @@ const handleSubmit = async () => {
     // Handle customer - extract alias_id if it's an object
     const customerAliasId = form.value.customer?.alias_id || form.value.customer
     
-    Object.entries({
+     // Create a copy of form.value without the payment field if it's null
+    const formDataToSend = {
       ...form.value,
       customer: customerAliasId
-    }).forEach(([key, val]) => {
+    }
+    
+    if (formDataToSend.payment === null) {
+      delete formDataToSend.payment
+    }
+
+    Object.entries(formDataToSend).forEach(([key, val]) => {
       if (key === 'invoice_image') {
         if (val instanceof File) formData.append(key, val)
       } else if (key !== 'version') {
@@ -370,6 +377,19 @@ const handleSubmit = async () => {
     })
     
     formData.append('branch', branch)
+
+    // Object.entries({
+    //   ...form.value,
+    //   customer: customerAliasId
+    // }).forEach(([key, val]) => {
+    //   if (key === 'invoice_image') {
+    //     if (val instanceof File) formData.append(key, val)
+    //   } else if (key !== 'version') {
+    //     formData.append(key, val)
+    //   }
+    // })
+    
+    // formData.append('branch', branch)
 
     const response = await axios({
       method: editing.value ? 'put' : 'post',
@@ -385,6 +405,7 @@ const handleSubmit = async () => {
     submitting.value = false
   }
 }
+
 // Update handleSubmit to send just the customer alias_id:
 // const handleSubmit = async () => {
 //   try {

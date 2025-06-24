@@ -469,6 +469,7 @@ const formData = ref({
   customer: '',
   payment_details: [
     {
+      alias_id: '',
       payment_instrument: '',
       id_number: '',
       amount: 0,
@@ -693,6 +694,7 @@ const addPaymentDetail = () => {
     detail: '',
   })
 }
+
 // const addPaymentDetail = () => {
 //   formData.value.payment_details.push({
 //     payment_instrument: '',
