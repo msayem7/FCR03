@@ -450,20 +450,6 @@ const isSubmitting = ref(false)
 const isLoading = ref(false)
 const errors = ref({})
 
-
-// const formData = ref({
-//   received_date: new Date().toISOString().split('T')[0],
-//   customer: '',
-//   payment_details: [
-//     {
-//       payment_instrument: '',
-//       id_number: '',
-//       amount: 0,
-//       detail: '',
-//     }
-//   ]
-// })
-
 const formData = ref({
   received_date: new Date().toISOString().split('T')[0],
   customer: '',
@@ -534,27 +520,8 @@ const loadPaymentInstruments = async () => {
 }
 
 // In the script section of PaymentForm.vue
-
 const loadPaymentData = async (id) => {
-  // try {
-  //   isLoading.value = true
-  //   const response = await axios.get(`/v1/chq/payments/${id}/`)
-  //   paymentData.value = response.data
-
-  //   console.log('Loaded payment:', paymentData)
-  //   // Set form data
-  //   formData.value = {
-  //     received_date: paymentData.value.received_date,
-  //     customer: paymentData.value.customer,
-  //     payment_details: paymentData.value.payment_details.map(detail => ({
-  //       alias_id: detail.alias_id,
-  //       payment_instrument: detail.payment_instrument,
-  //       id_number: detail.id_number || '',
-  //       amount: detail.amount,
-  //       detail: detail.detail,
-  //     })),
-  //     version: paymentData.value.version
-  //   }
+ 
   try {
     isLoading.value = true
     const response = await axios.get(`/v1/chq/payments/${id}/`)
@@ -577,7 +544,7 @@ const loadPaymentData = async (id) => {
     await loadCustomerInvoices()
     //const paidInvoicesResponse = paymentData.value.invoices || []
     
-     const paidInvoicesResponse = await axios.get(`/v1/chq/credit-invoices/`, {
+    const paidInvoicesResponse = await axios.get(`/v1/chq/credit-invoices/`, {
       params: {
         branch: branchStore.selectedBranch,
         customer: paymentData.value.customer.alias_id,
@@ -607,12 +574,6 @@ const loadPaymentData = async (id) => {
       net_due: invoice.sales_amount - invoice.sales_return
     }))
 
-    // console.log('Paid Invoices:', paidInvoices)
-    // console.log('Unpaid Invoices:', unpaidInvoices)
-    // Update selected invoices
-    //// 
-    // selectedInvoices.value = paidInvoices
-    // console.log('selectedInvoices:', selectedInvoices)
 
     // Update the invoices list to show both paid and unpaid
     customerInvoices.value = [
@@ -637,48 +598,6 @@ const loadPaymentData = async (id) => {
 }
 
 
-
-
-// const loadPaymentData = async (id) => {
-//   try {
-//     isLoading.value = true
-//     const response = await axios.get(`/v1/chq/payments/${id}/`)
-//     const payment = response.data
-
-//     formData.value = {
-//       received_date: payment.received_date,
-//       customer: payment.customer.alias_id,
-//       payment_details: payment.payment_details.map(detail => ({
-//         payment_instrument: detail.payment_instrument.id,
-//         id_number: detail.id_number || '',
-//         amount: detail.amount,
-//         detail: detail.detail,
-//       })) || [{
-//         payment_instrument: '',
-//         amount: 0,
-//         detail: '',
-//       }]
-//     }
-    
-//     // Load invoices for this customer
-//     await loadCustomerInvoices()
-    
-//     // Load existing allocations. 
-//     const allocationResponse = await axios.get(`/v1/chq/payments/${id}/invoices/`)
-//     selectedInvoices.value = allocationResponse.data.map(item => ({
-//       ...item.credit_invoice,
-//       // customer..name
-//       customer_name: item.credit_invoice.customer_name,
-//       net_due: item.credit_invoice.sales_amount - item.credit_invoice.sales_return
-//     }))
-//   } catch (error) {
-//     notificationStore.showError('Failed to load payment data: ' + error.message)
-//     router.push('/payment')
-//   } finally {
-//     isLoading.value = false
-//   }
-// }
-
 const updateAmount = (index) => {
   const detail = formData.value.payment_details[index]
   detail.amount = parseNumber(detail.formattedAmount)
@@ -687,6 +606,7 @@ const updateAmount = (index) => {
 
 const addPaymentDetail = () => {
   formData.value.payment_details.push({
+    alias_id: '',
     payment_instrument: '',
     id_number: '',
     amount: 0,
@@ -695,14 +615,6 @@ const addPaymentDetail = () => {
   })
 }
 
-// const addPaymentDetail = () => {
-//   formData.value.payment_details.push({
-//     payment_instrument: '',
-//     id_number: '',
-//     amount: 0,
-//     detail: '',
-//   })
-// }
 
 const removePaymentDetail = (index) => {
   formData.value.payment_details.splice(index, 1)
@@ -875,92 +787,7 @@ const handleSubmitError = (error) => {
     notificationStore.showError(error.message || 'Failed to submit payment')
   }
 } 
-// const cashNonCashWiseAmount = () => {
 
-//   return formData.value.payment_details.forEach((detail) => {
-//     let cashAmount=0.0,  calimedAmount = 0.0
-//     const instrument = paymentInstruments.value.find(
-//       inst => inst.id === detail.payment_instrument
-//     )
-//     if (!instrument) return 0
-//     const instrumentType = instrumentTypeList.value.find(
-//       instType => instType.id == instrument.instrument_type
-//     )
-//     if (instrumentType) return 0
-
-//     if (instrumentType.is_cash_equivalent)
-//       cashAmount += detail.amount
-//     else
-//       calimedAmount += detail.amount
-
-//     return (cashAmount, calimedAmount)
-//   })
-  
-  
-// }
-
-
-// const submitForm = async () => {
-//   isSubmitting.value = true
-//   errors.value = {}
-
-//   try {
-    
-//     const cash_claim = cashAndClaimAmount()
-
-//     const payload = {
-//       received_date: formData.value.received_date,
-//       customer: formData.value.customer,
-//       branch: branchStore.selectedBranch,
-//       payment_details: formData.value.payment_details.map(detail => ({
-//         payment_instrument: detail.payment_instrument,
-//         id_number: detail.id_number,
-//         amount: parseFloat(detail.amount),
-//         detail: detail.detail,
-//       })),
-//       // Add invoice allocations to payload
-//       invoices: selectedInvoices.value.map(invoice => ({
-//              //allocated_amount: invoice.net_due,
-//         alias_id: invoice.alias_id,
-//         ...invoice
-//       })),
-
-//       shortage_amount: -1 * paymentDifference.value,
-//       cash_equivalent_amount: cash_claim.cashSum,
-//       claim_amount: cash_claim.nonCashSum,
-//       total_amount: totalPaymentAmount.value
-//     }
-
-//     if (isEditMode.value) {
-//       await axios.put(`/v1/chq/payments/${route.params.id}/`, payload)
-//     } else {
-//       await axios.post('/v1/chq/payments/', payload)
-//     }
-//     notificationStore.showSuccess('Payment saved successfully')
-//     router.push('/operations/payment')
-//   } catch (error) {
-//     if (error.response?.data?.error?.details) {
-//       const newErrors = {}
-      
-//       // Process payment_details errors
-//       error.response.data.error.details.payment_details?.forEach((detailErrors, index) => {
-//         Object.entries(detailErrors).forEach(([field, messages]) => {
-//           if (messages.length > 0) {
-//             newErrors[`payment_details.${index}.${field}`] = messages[0]
-//           }
-//         })
-//       })
-
-//       errors.value = newErrors
-//       notificationStore.showError('Please correct the errors in the form')
-//     } else {
-//       errors.value.general = [error.message || 'Failed to submit payment']
-//       notificationStore.showError(error.message || 'Failed to submit payment')
-//     }
-//   } finally {
-//     isSubmitting.value = false
-//   }
-// }
 
 onMounted(() => {
   // console.log('Loading instrument types:', instrumentTypeList.value)

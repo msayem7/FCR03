@@ -10,7 +10,7 @@ export const useAuthStore = defineStore('auth', {
     actions: {
         async initialize() {
             try {
-                if (this.token) {
+                if (this.token) {                    
                     
                     // Check if token is expired
                     const decoded = jwtDecode(this.token);
